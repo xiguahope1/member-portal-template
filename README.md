@@ -4,7 +4,7 @@ A gated member portal for a student-run organisation: sign-up, admin approval, a
 
 Built from scratch as a single HTML file. No framework, no build step. Plain HTML, CSS and JavaScript on top of Supabase (Auth, Postgres, Storage, Realtime).
 
-**[Live demo →]((https://xiguahope1.github.io/member-portal-template/))** · runs on sample data, no sign-up needed. Click **Log in as a member** or **Log in as an admin**.
+**[Live demo →](https://xiguahope1.github.io/member-portal-template/)** · runs on sample data, no sign-up needed. Click **Log in as a member** or **Log in as an admin**.
 
 ![Login screen](docs/login.png)
 
