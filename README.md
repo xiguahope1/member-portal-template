@@ -96,4 +96,4 @@ docs/                 screenshots used in this README
 
 ## Author
 
-**[Your name]** · [LinkedIn](https://linkedin.com/in/your-handle) · [Email](mailto:you@example.com)
+**Hope Leow Yong Xi** · [LinkedIn](https://www.linkedin.com/in/yong-xi-leow-731161256) · [Email](hope.leow201415@gmail.com)
