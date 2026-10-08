@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Acme Member Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#07081a;
+    --surface:#0c0e1e;
+    --raise:#11142a;
+    --hover:#161a33;
+    --line:#1e2238;
+    --line-2:#2a2f4a;
+    --text:#f3f1ea;
+    --muted:#9a9db2;
+    --dim:#686c86;
+    --cream:#dfdcc9;
+    --cream-2:#ede9e0;
+    --ok:#94c2a3; --ok-bg:rgba(148,194,163,.1);
+    --warn:#d8b877; --warn-bg:rgba(216,184,119,.1);
+    --bad:#dc8f8a; --bad-bg:rgba(220,143,138,.1);
+    --display:'Playfair Display', Georgia, 'Times New Roman', serif;
+    --body:'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    --logo:'Times New Roman', Times, serif;
+    --r:10px;
+    --side:248px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.55;letter-spacing:-.003em;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:1.5px solid var(--cream);outline-offset:2px}
+  h1,h2,h3{margin:0;font-weight:600;text-wrap:balance;line-height:1.2}
+  h1{font-family:var(--display);font-size:clamp(26px,3.2vw,34px);letter-spacing:-.005em}
+  h2{font-family:var(--display);font-size:19px}
+  h3{font-size:14.5px;font-weight:600}
+  .num{font-variant-numeric:tabular-nums}
+  .mono{font-family:var(--mono);font-size:.92em;letter-spacing:0}
+  svg.i{width:16px;height:16px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .label{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:600}
+
+  /* ===== Shell ===== */
+  .shell{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100%}
+  .side{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;border-right:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;padding:26px 16px 18px}
+  .brand{padding:0 10px 26px}
+  .wordmark{font-family:var(--logo);font-weight:400;color:var(--cream);letter-spacing:.42em;font-size:17px;white-space:nowrap}
+  .brand .label{display:block;margin-top:6px;letter-spacing:.12em;font-size:9.5px}
+  .modes{display:grid;grid-template-columns:1fr 1fr;background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:3px;margin:0 4px 22px}
+  .modes button{background:none;border:0;border-radius:6px;padding:7px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600}
+  .modes button[aria-pressed="true"]{background:var(--hover);color:var(--cream)}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav .label{padding:0 12px 8px}
+  .nav button{display:flex;align-items:center;gap:12px;background:none;border:0;border-radius:8px;padding:10px 12px;color:var(--muted);text-align:left;font-size:14px;position:relative}
+  .nav button:hover{color:var(--text);background:var(--raise)}
+  .nav button[aria-current="page"]{color:var(--text);background:var(--raise)}
+  .nav button[aria-current="page"]::before{content:"";position:absolute;left:-16px;top:9px;bottom:9px;width:2px;background:var(--cream);border-radius:2px}
+  .nav .end{margin-left:auto;color:var(--dim)}
+  .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+  .conn{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--dim);padding:0 12px}
+  .conn .dot{width:6px;height:6px;border-radius:50%;background:var(--dim)}
+  .conn.live .dot{background:var(--ok);box-shadow:0 0 0 3px rgba(148,194,163,.15)}
+  .whoami{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--raise)}
+  .whoami .t{flex:1;min-width:0;line-height:1.3}
+  .whoami b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .whoami span{font-size:12px;color:var(--dim)}
+  .iconbtn{background:none;border:1px solid var(--line-2);border-radius:7px;width:32px;height:32px;display:grid;place-items:center;color:var(--muted)}
+  .iconbtn:hover{color:var(--text);border-color:var(--cream)}
+  .av{width:34px;height:34px;border-radius:50%;background:var(--hover);border:1px solid var(--line-2);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--cream);letter-spacing:.04em;flex:0 0 auto}
+  .av.lg{width:58px;height:58px;font-family:var(--display);font-size:20px;font-weight:600}
+
+  main{min-width:0;padding-inline:44px;padding-block:40px 110px}
+  .page{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+  .ph{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-bottom:26px;border-bottom:1px solid var(--line)}
+  .ph .label{display:block;margin-bottom:10px;color:var(--cream)}
+  .ph p{margin:8px 0 0;color:var(--muted);max-width:60ch}
+  .ph-r{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ===== Surfaces ===== */
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+  .panel-h{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .panel-h p{margin:2px 0 0;color:var(--dim);font-size:13px}
+  .panel-b{padding:22px}
+  .cols{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:22px;align-items:start}
+  .stack{display:flex;flex-direction:column;gap:22px}
+
+  /* ===== Buttons & chips ===== */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;letter-spacing:.03em;border:1px solid var(--line-2);background:var(--raise);color:var(--text);transition:border-color .15s,background .15s,color .15s;white-space:nowrap}
+  .btn:hover{border-color:var(--cream)}
+  .btn.pri{background:var(--cream);border-color:var(--cream);color:#0c0e1e}
+  .btn.pri:hover{background:var(--cream-2)}
+  .btn.ghost{background:transparent}
+  .btn.danger{background:transparent;color:var(--bad);border-color:rgba(220,143,138,.35)}
+  .btn.danger:hover{border-color:var(--bad)}
+  .btn.sm{padding:7px 12px;font-size:12px}
+  .btn[disabled]{opacity:.4;cursor:not-allowed}
+  .btn[disabled]:hover{border-color:var(--line-2)}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.06em;padding:4px 10px;border-radius:999px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap;font-weight:600}
+  .chip .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .chip.ok{color:var(--ok);background:var(--ok-bg);border-color:transparent}
+  .chip.warn{color:var(--warn);background:var(--warn-bg);border-color:transparent}
+  .chip.bad{color:var(--bad);background:var(--bad-bg);border-color:transparent}
+  .yes{color:var(--ok);display:inline-flex;align-items:center;gap:6px}
+  .no{color:var(--dim);display:inline-flex;align-items:center;gap:6px}
+  .miss{color:var(--warn);display:inline-flex;align-items:center;gap:6px}
+
+  /* ===== Notice ===== */
+  .notice{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:var(--cream-2);color:#0c0e1e;border-radius:var(--r);padding:18px 22px}
+  .notice b{font-family:var(--display);font-size:17px;font-weight:600;display:block}
+  .notice p{margin:2px 0 0;font-size:13.5px;max-width:62ch;color:#2b2e44}
+  .notice .btn.pri{background:#0c0e1e;border-color:#0c0e1e;color:var(--cream)}
+  .notice .btn.pri:hover{background:#1a1d33}
+  .notice.bad{background:var(--bad-bg);color:var(--text);border:1px solid rgba(220,143,138,.3)}
+  .notice.bad b{color:var(--bad)}
+  .notice.bad p{color:var(--muted)}
+
+  /* ===== Identity / details ===== */
+  .ident{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .ident h2{font-size:23px}
+  .ident .sub{color:var(--muted);font-size:13.5px;margin-top:2px}
+  .dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0;border-top:1px solid var(--line)}
+  .dl > div{padding:14px 0;border-bottom:1px solid var(--line);min-width:0}
+  .dl > div:nth-child(odd){padding-right:18px}
+  .dl dt{margin-bottom:3px}
+  .dl dd{margin:0;overflow-wrap:anywhere}
+  .dl dd.empty{color:var(--warn);font-size:13.5px}
+
+  /* ===== Checklist ===== */
+  .meter{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .meter .bar{flex:1;height:4px;background:var(--raise);border-radius:4px;overflow:hidden}
+  .meter .bar span{display:block;height:100%;background:var(--cream);border-radius:4px;transition:width .35s}
+  .meter .n{font-size:12px;color:var(--muted)}
+  .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+  .step{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
+  .step:first-child{border-top:0}
+  .step .mk{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:grid;place-items:center;font-size:11px;color:var(--dim)}
+  .step.done .mk{background:var(--cream);border-color:var(--cream);color:#0c0e1e}
+  .step.done .mk svg{width:12px;height:12px;stroke-width:2.4}
+  .step .s{font-size:12.5px;color:var(--dim)}
+  .step.done .t{color:var(--muted)}
+
+  /* ===== Contacts ===== */
+  .contact{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .contact:first-child{border-top:0;padding-top:0}
+  .contact .t{flex:1;min-width:0;line-height:1.35}
+  .contact b{display:block;font-size:14px}
+  .contact span{font-size:12.5px;color:var(--dim)}
+
+  /* ===== Library ===== */
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .seg{display:flex;gap:4px;flex-wrap:wrap}
+  .seg button{background:none;border:1px solid transparent;border-radius:7px;padding:7px 12px;font-size:12.5px;color:var(--muted)}
+  .seg button:hover{color:var(--text)}
+  .seg button[aria-pressed="true"]{background:var(--raise);border-color:var(--line-2);color:var(--text)}
+  .lib{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;display:flex;flex-direction:column;gap:8px;min-height:176px;transition:border-color .15s}
+  .doc:hover{border-color:var(--line-2)}
+  .doc .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .doc .ft{width:30px;height:38px;border:1px solid var(--line-2);border-radius:4px 9px 4px 4px;display:grid;place-items:end center;padding-bottom:5px;font-size:8.5px;letter-spacing:.12em;color:var(--dim);font-weight:600}
+  .doc h3{font-size:15px;margin-top:6px}
+  .doc p{margin:0;color:var(--muted);font-size:13px;flex:1}
+  .doc .bt{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--dim)}
+  .doc.locked h3,.doc.locked p{color:var(--dim)}
+  .doc.locked p{filter:blur(2.5px);user-select:none}
+  .lk{display:inline-flex;align-items:center;gap:6px}
+  .lk svg{width:13px;height:13px}
+  .empty{color:var(--dim);font-size:13.5px;padding:34px;text-align:center;border:1px dashed var(--line-2);border-radius:var(--r)}
+
+  /* ===== Forms ===== */
+  .form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 18px}
+  .field{display:flex;flex-direction:column;gap:7px;min-width:0}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600}
+  .field label .req{color:var(--warn)}
+  .field input,.field select,.field textarea{background:var(--raise);border:1px solid var(--line-2);border-radius:8px;padding:11px 13px;width:100%;min-width:0;transition:border-color .15s}
+  .field input:hover,.field select:hover,.field textarea:hover{border-color:#3a4062}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--cream)}
+  .field input:disabled,.field select:disabled{color:var(--muted);background:transparent;border-color:var(--line);cursor:default}
+  .field .hint{font-size:12px;color:var(--dim)}
+  .form-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+  .err{color:var(--bad);font-size:13px}
+  .sect{margin:28px 0 14px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .sect:first-child{margin-top:0}
+  .sect span{font-size:12px;color:var(--dim)}
+
+  /* ===== Auth ===== */
+  .auth{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)}
+  .auth-l{position:relative;padding:48px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--line);background:var(--surface);overflow:hidden}
+  .auth-l canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}
+  .auth-l > *{position:relative}
+  .auth-l h1{font-size:clamp(32px,4vw,46px);font-weight:600;margin-top:10px;max-width:14ch}
+  .auth-l p{color:var(--muted);max-width:40ch;margin:16px 0 0}
+  .auth-l .tag{font-family:Georgia,'Times New Roman',serif;font-weight:600;color:var(--cream);font-size:15px}
+  .auth-r{display:grid;place-items:center;padding:48px 32px}
+  .auth-card{width:min(440px,100%)}
+  .auth-tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);margin-bottom:26px}
+  .auth-tabs button{background:none;border:0;padding:0 0 12px;color:var(--dim);font-size:14px;position:relative;font-weight:600}
+  .auth-tabs button[aria-selected="true"]{color:var(--text)}
+  .auth-tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1.5px;background:var(--cream)}
+  .auth-card h2{font-size:24px;margin-bottom:6px}
+  .auth-card > p{color:var(--muted);margin:0 0 22px;font-size:13.5px}
+  .auth-card .form{grid-template-columns:1fr}
+  .auth-card .form.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .auth-card .btn.pri{width:100%;padding:12px}
+  .auth-alt{margin-top:18px;font-size:13px;color:var(--dim)}
+  .linkbtn{background:none;border:0;padding:0;color:var(--cream);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+  .auth-admin{margin-top:28px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--dim);flex-wrap:wrap}
+
+  /* ===== Agreement ===== */
+  .terms{padding:4px 22px 22px;max-height:360px;overflow:auto}
+  .terms h3{font-family:var(--display);font-size:15.5px;font-weight:600;color:var(--cream);margin:20px 0 4px}
+  .terms p{margin:0;color:var(--muted);font-size:13.5px;max-width:70ch}
+  .checks{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+  .ck{display:flex;gap:12px;align-items:flex-start;font-size:14px;cursor:pointer}
+  .ck input{width:17px;height:17px;margin-top:3px;accent-color:#dfdcc9;flex:0 0 auto}
+  .sign-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:start}
+  .pad{position:relative;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;height:168px;touch-action:none}
+  .pad canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:8px;cursor:crosshair}
+  .pad .base{position:absolute;left:20px;right:20px;bottom:38px;border-bottom:1px solid var(--line-2);pointer-events:none}
+  .pad .x{position:absolute;left:20px;bottom:42px;font-family:var(--display);color:var(--dim);pointer-events:none}
+  .pad .ph{position:absolute;inset:0 0 50px;display:grid;place-items:center;color:var(--dim);font-size:13px;pointer-events:none}
+  .sigimg{background:var(--bg);border:1px solid var(--line-2);border-radius:8px;display:block;width:100%;max-width:320px;height:auto}
+
+  /* ===== Admin ===== */
+  .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+  .stat{padding:18px 22px;border-left:1px solid var(--line)}
+  .stat:first-child{border-left:0}
+  .stat .v{font-family:var(--display);font-size:30px;font-weight:600;margin-top:4px;line-height:1.1}
+  .stat .v.ok{color:var(--ok)} .stat .v.warn{color:var(--warn)} .stat .v.bad{color:var(--bad)}
+  .search{display:flex;align-items:center;gap:8px;background:var(--raise);border:1px solid var(--line-2);border-radius:8px;padding:0 12px;color:var(--dim);min-width:0}
+  .search input{background:none;border:0;padding:9px 0;outline:none;min-width:0;width:220px;color:var(--text)}
+  .search:focus-within{border-color:var(--cream)}
+  .tw{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:860px}
+  th{text-align:left;padding:12px 16px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr{cursor:pointer;transition:background .12s}
+  tbody tr:hover{background:var(--raise)}
+  tbody tr:last-child td{border-bottom:0}
+  .who{display:flex;align-items:center;gap:12px;min-width:0}
+  .who b{display:block;font-size:14px}
+  .who span{font-size:12px;color:var(--dim)}
+  td .sub{font-size:12px;color:var(--dim);display:block}
+
+  /* ===== Modal ===== */
+  .scrim{position:fixed;inset:0;background:rgba(3,4,12,.82);backdrop-filter:blur(3px);z-index:50;display:grid;place-items:center;padding:20px}
+  .modal{background:var(--surface);border:1px solid var(--line-2);border-radius:12px;width:min(720px,100%);max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .modal.sm{width:min(460px,100%)}
+  .mh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 22px;border-bottom:1px solid var(--line)}
+  .mh p{margin:3px 0 0;color:var(--dim);font-size:12.5px}
+  .mb{padding:22px;overflow:auto}
+  .mf{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 22px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .mf .r{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .sheet{position:relative;background:#f8f7f3;color:#0c0e1e;border-radius:4px;aspect-ratio:210/297;width:400px;max-width:100%;margin:0 auto;padding:34px 32px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+  .sheet .w{font-family:var(--logo);letter-spacing:.38em;font-size:10.5px;color:#4a4f6a}
+  .sheet h3{font-family:var(--display);font-size:21px;font-weight:600;margin:24px 0 8px}
+  .sheet .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4a4f6a;margin-top:22px;font-weight:600}
+  .sheet .l{height:7px;border-radius:4px;background:#dcdad0;margin:9px 0}
+  .wm{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+  .wm span{transform:rotate(-32deg);font-size:14px;letter-spacing:.14em;color:rgba(12,14,30,.13);white-space:nowrap;font-weight:600}
+  .slots{display:flex;flex-direction:column;gap:8px}
+  .slot{background:var(--raise);border:1px solid var(--line-2);border-radius:8px;padding:13px 16px;display:flex;justify-content:space-between;gap:10px;text-align:left}
+  .slot span{color:var(--dim);font-size:12.5px}
+  .slot[aria-pressed="true"]{border-color:var(--cream)}
+  .idbox{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--raise);border:1px solid var(--line-2);border-radius:8px;padding:14px 16px;margin-top:14px}
+  .idbox b{font-family:var(--display);font-size:22px;letter-spacing:.06em}
+  .dz{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line)}
+  .dz:first-child{border-top:0;padding-top:0}
+  .dz p{margin:2px 0 0;font-size:12.5px;color:var(--dim)}
+
+  /* ===== Toast ===== */
+  .toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);background:var(--cream-2);color:#0c0e1e;padding:11px 18px;border-radius:8px;font-size:13.5px;font-weight:600;opacity:0;transition:.22s;z-index:70;pointer-events:none;max-width:calc(100% - 32px);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .toast.bad{background:#3a2226;color:#f3d6d4}
+
+  /* ===== Demo mode ===== */
+  .demo-bar{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;gap:10px;background:var(--raise);border:1px solid var(--line-2);border-radius:999px;padding:6px 6px 6px 14px;font-size:12px;color:var(--muted);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .demo-bar[hidden]{display:none}
+  .demo-bar .dot{width:7px;height:7px;border-radius:50%;background:var(--warn);flex:0 0 auto}
+  .demo-bar button{background:var(--hover);border:1px solid var(--line-2);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text)}
+  .demo-bar button:hover{border-color:var(--cream)}
+  .demo-pick{margin-top:26px;padding-top:20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+  .demo-pick .label{color:var(--cream)}
+  .demo-acct{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--raise);border:1px solid var(--line-2);border-radius:var(--r);padding:13px 16px;transition:border-color .15s}
+  .demo-acct:hover{border-color:var(--cream)}
+  .demo-acct b{font-size:14px}
+  .demo-acct span{font-size:12.5px;color:var(--dim)}
+  .demo-pick p{margin:4px 0 0;font-size:12.5px;color:var(--dim)}
+  @media (max-width:820px){.demo-bar{left:16px;right:16px;justify-content:space-between;border-radius:12px}}
+
+  /* ===== Responsive ===== */
+  @media (max-width:1100px){.lib{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:980px){
+    .cols,.sign-grid{grid-template-columns:1fr}
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .stat:nth-child(odd){border-left:0}
+    .stat:nth-child(n+3){border-top:1px solid var(--line)}
+    .auth{grid-template-columns:1fr}
+    .auth-l{border-right:0;border-bottom:1px solid var(--line);padding:32px 24px;gap:40px}
+  }
+  @media (max-width:820px){
+    .shell{grid-template-columns:minmax(0,1fr)}
+    .side{min-width:0;max-width:100vw}
+    .side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;z-index:30;flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 16px;border-right:0;border-bottom:1px solid var(--line)}
+    .brand{padding:0;margin-right:auto}
+    .brand .label{display:none}
+    .modes{margin:0;order:2}
+    .nav{order:4;flex-basis:100%;min-width:0;max-width:100%;flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:4px}
+    .nav::-webkit-scrollbar{display:none}
+    .nav .label{display:none}
+    .nav button{white-space:nowrap;padding:8px 12px}
+    .nav button[aria-current="page"]::before{display:none}
+    .side-foot{order:3;margin:0;flex-direction:row;align-items:center}
+    .conn,.whoami .t{display:none}
+    .whoami{padding:4px;border:0;background:none}
+    main{padding-inline:16px;padding-block:26px 100px}
+    .lib,.form,.dl{grid-template-columns:1fr}
+    .dl > div:nth-child(odd){padding-right:0}
+    .auth-card .form.two{grid-template-columns:1fr}
+    .auth-r{padding:32px 16px}
+    .search input{width:140px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* ===== Live-version additions ===== */
+  .boot{min-height:100vh;display:grid;place-items:center;color:var(--dim);font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+  .inbox{display:flex;flex-direction:column;gap:14px}
+  .inbox .mailicon{width:44px;height:44px;border-radius:50%;border:1px solid var(--line-2);display:grid;place-items:center;color:var(--cream)}
+  .inbox .mailicon svg{width:20px;height:20px}
+  .inbox b.addr{color:var(--text);font-weight:600}
+  .auth-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px;font-size:13px;color:var(--dim)}
+  .code-input{letter-spacing:.4em;font-family:var(--mono);font-size:18px !important;text-align:center}
+  .modal.lg{width:min(980px,100%)}
+  .viewer{position:relative;background:var(--bg);border-radius:8px;overflow:auto;min-height:55vh;max-height:72vh;display:flex;justify-content:center;align-items:flex-start;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+  .viewer canvas{display:block;max-width:none;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+  .viewer video,.viewer img{max-width:100%;max-height:70vh;display:block;margin:auto}
+  .viewer .wmgrid{position:absolute;inset:0;pointer-events:none;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:170px;overflow:hidden}
+  .viewer .wmgrid span{transform:rotate(-30deg);align-self:center;justify-self:center;white-space:nowrap;font-size:12.5px;letter-spacing:.1em;font-weight:600;color:rgba(223,220,201,.16)}
+  .vbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .vbar .num{color:var(--muted);font-size:13px;min-width:92px;text-align:center}
+  .upload{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px 18px}
+  .drop{grid-column:1/-1;border:1px dashed var(--line-2);border-radius:8px;padding:18px;display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;background:var(--raise)}
+  .drop input[type=file]{color:var(--muted);font-size:13px;max-width:100%}
+  .switch-row{grid-column:1/-1;display:flex;gap:12px;align-items:flex-start;font-size:14px;cursor:pointer}
+  .switch-row input{width:17px;height:17px;margin-top:3px;accent-color:#dfdcc9;flex:0 0 auto}
+  .switch-row span{color:var(--dim);font-size:12.5px;display:block}
+  .files{display:flex;flex-direction:column}
+  .frow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 22px;border-top:1px solid var(--line)}
+  .frow:first-child{border-top:0}
+  .frow b{display:block;font-size:14px}
+  .frow span{font-size:12.5px;color:var(--dim)}
+  .locked-lib{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:48px 24px;border:1px dashed var(--line-2);border-radius:var(--r);color:var(--muted)}
+  .locked-lib svg{width:26px;height:26px;color:var(--dim)}
+  .fatal{max-width:520px;margin:18vh auto 0;padding:0 16px;text-align:center;color:var(--muted)}
+  .fatal h1{margin-bottom:10px;color:var(--text)}
+  .ndoc{display:grid;grid-template-columns:212px minmax(0,1fr);border-top:1px solid var(--line);position:relative}
+  .ndoc-bar{position:absolute;top:-1px;left:0;right:0;height:2px;background:transparent;z-index:2;pointer-events:none}
+  .ndoc-bar i{display:block;height:100%;width:0;background:var(--cream);border-radius:0 2px 2px 0;transition:width .12s linear}
+  .ntoc{border-right:1px solid var(--line);padding:20px 10px 20px 12px;max-height:min(74vh,700px);overflow:auto;font-size:12.5px}
+  .ntoc .label{display:block;margin:0 0 10px 10px}
+  .ntoc button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:24px minmax(0,1fr);gap:2px;padding:6px 10px;border-radius:6px;color:var(--dim);line-height:1.35;cursor:pointer}
+  .ntoc button:hover{background:var(--hover);color:var(--muted)}
+  .ntoc button:focus-visible{outline:2px solid var(--line-2)}
+  .ntoc button.on{background:var(--raise);color:var(--text)}
+  .ntoc button span{font-family:var(--mono);font-size:10.5px;color:var(--dim);padding-top:2px}
+  .ntoc button.on span{color:var(--cream)}
+  .ntoc .nsep{height:1px;background:var(--line);margin:8px 10px}
+  .ntoc .nread{margin:14px 10px 0;font-size:11.5px;color:var(--dim)}
+  .ntoc .nread b{color:var(--muted);font-weight:500}
+  .nda{position:relative;padding:0 clamp(18px,4.5vw,56px) 36px;max-height:min(74vh,700px);overflow:auto;font-size:14px;line-height:1.75;color:var(--muted);scroll-behavior:smooth}
+  .nda:focus-visible{outline:2px solid var(--line-2);outline-offset:-2px}
+  .nda .cover{text-align:center;padding:48px 0 34px;margin:0 auto;max-width:64ch;border-bottom:1px solid var(--line)}
+  .nda .cover .between{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .nda .cover h2{font-family:var(--display);font-size:clamp(25px,3.2vw,32px);font-weight:600;color:var(--text);line-height:1.15;margin:16px 0 10px;letter-spacing:-.01em}
+  .nda .cover .sub{font-size:13.5px;color:var(--muted);margin:0}
+  .nda .cover .meta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:22px}
+  .nda .cover .meta span{border:1px solid var(--line-2);border-radius:999px;padding:3px 11px;font-size:11.5px;color:var(--muted)}
+  .nda .dated{max-width:68ch;margin:28px auto 0;padding:14px 18px;border:1px solid var(--line);border-radius:8px;background:var(--raise);color:var(--text);font-size:13.5px}
+  .nsec{max-width:68ch;margin:0 auto;padding:34px 0 6px}
+  .nsec+.nsec,.nkick+.nsec{border-top:1px solid var(--line)}
+  .nkick{max-width:68ch;margin:36px auto 0;display:flex;align-items:center;gap:14px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+  .nkick::before,.nkick::after{content:"";flex:1;height:1px;background:var(--line-2)}
+  .nkick+.nsec{border-top:0;padding-top:22px}
+  .nsec h3{display:flex;align-items:baseline;gap:14px;font-family:var(--display);font-size:21px;font-weight:600;color:var(--text);margin:0 0 18px;letter-spacing:-.005em;line-height:1.25}
+  .nsec h3 .n{flex:0 0 auto;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--cream);border:1px solid var(--line-2);border-radius:6px;padding:1px 7px;transform:translateY(-3px)}
+  .nda p{margin:0 0 14px}
+  .nda p.nc{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:start}
+  .nda p.nc>.no{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--cream);line-height:24.5px}
+  .nda p.nc .lead-in{color:var(--text);font-weight:600}
+  .nda p.ni{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:start;margin:-6px 0 12px 44px}
+  .nda .nsec.pre p.ni{margin:0 0 12px}
+  .nda p.ni>.no{color:var(--dim);font-weight:500}
+  .nda p.nd{margin:0 0 0 44px;padding:13px 18px;background:var(--raise);border:1px solid var(--line);border-top:0}
+  .nda p.nd>.no{display:block;color:var(--cream-2);font-weight:600;margin-bottom:2px}
+  .nda p:not(.nd)+p.nd{border-top:1px solid var(--line);border-radius:8px 8px 0 0;margin-top:-4px}
+  .nda p.nd:has(+ :not(.nd)),.nda p.nd:last-child{border-radius:0 0 8px 8px;margin-bottom:16px}
+  .nda p:not(.nd)+p.nd:has(+ :not(.nd)){border-radius:8px}
+  .nda .nsec.guard p{color:var(--dim)}
+  .nend{max-width:68ch;margin:30px auto 0;display:flex;align-items:center;gap:10px;padding:14px 18px;border:1px dashed var(--line-2);border-radius:8px;font-size:13px;color:var(--dim);transition:color .2s,border-color .2s}
+  .nend svg{width:16px;height:16px;flex:0 0 auto}
+  .ndoc.read .nend{color:var(--ok);border-color:rgba(148,194,163,.35);border-style:solid;background:var(--ok-bg)}
+  .ndoc.read .ndoc-bar i{background:var(--ok)}
+  .sched{width:100%;border-collapse:collapse;font-size:13.5px;min-width:0}
+  .sched th{width:42%;background:transparent;text-transform:none;letter-spacing:0;font-size:13px;color:var(--muted);font-weight:500;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .sched td{padding:11px 14px;border-bottom:1px solid var(--line)}
+  .sched tr:last-child th,.sched tr:last-child td{border-bottom:0}
+  .sched td.empty{color:var(--warn)}
+  .chip.dl{color:var(--cream);border-color:var(--line-2)}
+  .act-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .act-filters select{background:var(--raise);border:1px solid var(--line-2);border-radius:8px;padding:9px 12px}
+  .actlist{display:flex;flex-direction:column}
+  .actrow{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+  .actrow:first-child{border-top:0}
+  .actrow span{color:var(--dim)}
+  .busy{opacity:.6;pointer-events:none}
+  @media (max-width:820px){.upload{grid-template-columns:1fr}.ndoc{grid-template-columns:1fr}.ntoc{display:none}.nda{padding:0 18px 22px;max-height:70vh}.nda p.ni,.nda p.nd{margin-left:0}.nda p.nc{grid-template-columns:38px minmax(0,1fr)}}
+  @media print{body *{display:none !important}body::after{content:"Printing is turned off for Acme materials.";display:block !important;padding:40px;font:16px sans-serif}}
+</style>
+</head>
+<body>
+
+
+<div id="app"><div class="boot">Loading portal…</div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="demoBar" class="demo-bar" hidden><span class="dot"></span><span>Demo mode · sample data, kept only in this tab</span><button type="button" data-act="demoReset">Reset</button></div>
+<div id="modalRoot"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  /* ================= CONFIG ================= */
+  const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+  const SUPABASE_KEY = 'YOUR-PUBLISHABLE-KEY'; // publishable/anon key only, never the service-role key
+  const BUCKET = 'library';
+  const NDA_BUCKET = 'agreements';
+  const NDA_VERSION = 'v1.0';
+  const MAX_UPLOAD_MB = 50;
+  // Must match the starting password your admin_create_login function sets. Change it before deploying.
+  const DEFAULT_TEMP_PASSWORD = "ChangeMe-2026!";
+  // Starting passwords (Tmp-xxxxxxxxxx) are flagged must_change_password when the login is created
+  const isStartingPw = pw => pw === DEFAULT_TEMP_PASSWORD || /^Tmp-[A-Za-z0-9]{10}$/.test(pw);
+  let pwJustChanged = false;
+  const mustChangePw = () => !pwJustChanged && !!(S.session && S.session.user && S.session.user.user_metadata && S.session.user.user_metadata.must_change_password);
+  const LIB = {
+    pdfjs: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+    pdfjsWorker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+    pdflib: 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js'
+  };
+
+  /* ================= DEMO MODE =================
+     Runs when SUPABASE_URL hasn't been set. A stand-in for the Supabase client that keeps
+     sample data in the browser (sessionStorage), so the portal can be tried with no backend.
+     It mirrors the database rules in supabase/schema.sql: members see only their own record,
+     can't approve themselves, can't sign before approval, and files stay locked until signing. */
+  function makeDemoClient(){
+    const KEY = 'portal-demo-v1';
+    const PW = 'demo';
+    const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
+    const iso = (daysAgo=0) => new Date(Date.now() - daysAgo*86400000).toISOString();
+    const day = daysAgo => iso(daysAgo).slice(0,10);
+    const clone = o => JSON.parse(JSON.stringify(o));
+    const blobs = {};
+
+    function squiggle(seed){
+      try{
+        const c = document.createElement('canvas'); c.width = 300; c.height = 110;
+        const x = c.getContext('2d'); x.fillStyle = '#07081a'; x.fillRect(0,0,300,110);
+        x.strokeStyle = '#dfdcc9'; x.lineWidth = 2; x.lineCap = 'round'; x.beginPath();
+        let px = 30, py = 62; x.moveTo(px, py);
+        for(let i=0;i<14;i++){ px += 15; py = 62 + Math.sin(i*1.3 + seed) * (16 - i*0.6); x.quadraticCurveTo(px-8, py-20*Math.cos(i+seed), px, py); }
+        x.stroke(); return c.toDataURL('image/png');
+      }catch(e){ return null; }
+    }
+
+    function seed(){
+      const adminId = uuid(), memberId = uuid();
+      const users = [
+        { id: adminId,  email: 'admin@demo.example',  password: PW, meta: { name: 'Demo Admin' }, admin: true },
+        { id: memberId, email: 'member@demo.example', password: PW, meta: { name: 'Riley Morgan' } }
+      ];
+      let n = 0; const code = () => 'M-' + String(++n).padStart(4, '0');
+      const base = { preferred:'', linkedin:'', approved:false, approved_at:null, revoked:false, revoked_at:null, signed_at:null, signed_name:null, signature:null, nda_version:null, nda_path:null, handbook_at:null, source:'self' };
+      const full = (o) => Object.assign({ phone:'+44 7700 900123', university:'University of London', chapter:'London', country:'United Kingdom', timezone:'Europe/London (UTC+0)', adult:'yes' }, o);
+      const row = (o, daysAgo) => Object.assign({ id: uuid(), user_id: null, member_code: code(), created_at: iso(daysAgo), updated_at: iso(Math.max(0, daysAgo - 3)) }, base, o);
+      const signed = (o, daysAgo, s) => Object.assign(row(full(Object.assign({ approved:true, approved_at: iso(daysAgo-1) }, o)), daysAgo), { signed_at: iso(daysAgo-2), signed_name: o.name, signature: squiggle(s), nda_version: NDA_VERSION, nda_path: 'seed/' + o.email + '.pdf', handbook_at: iso(daysAgo-3), first_participation: day(daysAgo) });
+      const members = [
+        // The demo member: approved with details complete, so the next step is signing.
+        row(full({ user_id: memberId, email:'member@demo.example', name:'Riley Morgan', preferred:'Riley', vertical:'Research', division:'M&A', role:'Analyst', approved:true, approved_at: iso(4), first_participation: day(6), linkedin:'linkedin.com/in/example' }), 6),
+        signed({ email:'priya.n@demo.example', name:'Priya Natarajan', vertical:'Research', division:'Equity Research', role:'Senior Analyst', chapter:'Singapore', country:'Singapore', timezone:'Asia/Singapore (UTC+8)' }, 60, 1),
+        signed({ email:'tom.h@demo.example', name:'Tom Hartley', vertical:'Research', division:'M&A', role:'Head of Division' }, 120, 2),
+        signed({ email:'ana.r@demo.example', name:'Ana Ribeiro', vertical:'Growth', division:'Social Media', role:'Specialist', chapter:'Global remote team', country:'Portugal', timezone:'Europe/Lisbon (UTC+0)' }, 45, 3),
+        signed({ email:'leo.w@demo.example', name:'Leo Wang', vertical:'Research', division:'DCM', role:'Analyst', chapter:'Singapore', country:'Singapore', timezone:'Asia/Singapore (UTC+8)' }, 30, 4),
+        row({ email:'jas.k@demo.example', name:'Jas Kaur', vertical:'Growth', division:'Partnerships & Outreach', role:'Specialist' }, 1),
+        row({ email:'sam.o@demo.example', name:'Sam Okafor', vertical:'Research', division:'Markets', role:'Analyst' }, 2),
+        row({ email:'mia.c@demo.example', name:'Mia Costa', vertical:'Research', division:'ECM', role:'Analyst', approved:true, approved_at: iso(5), phone:'+351 912 345 678', country:'Portugal' }, 8),
+        Object.assign(signed({ email:'dan.f@demo.example', name:'Dan Fischer', vertical:'Growth', division:'Growth & Strategy', role:'Deputy Head', chapter:'Global remote team', country:'Germany', timezone:'Europe/Berlin (UTC+1)' }, 200, 5), { revoked:true, revoked_at: iso(12) })
+      ];
+      const res = (title, description, division, file_name, file_type, file_size, allow_download, daysAgo) =>
+        ({ id: uuid(), title, description, division, file_path: 'seed/' + file_name, file_name, file_type, file_size, allow_download, created_at: iso(daysAgo) });
+      const resources = [
+        res('M&A Analyst Handbook', 'How a deal note is researched, structured and reviewed, start to finish.', 'M&A', 'ma-analyst-handbook.pdf', 'application/pdf', 412000, false, 20),
+        res('Research Style Guide', 'Citation standard, chart rules and the house writing style for every report.', 'All Research', 'research-style-guide.pdf', 'application/pdf', 268000, false, 25),
+        res('Valuation Model Template', 'A starter comparable-companies model. Download it and work in your own copy.', 'All Research', 'valuation-template.csv', 'text/csv', 2100, true, 15),
+        res('Code of Conduct', 'How we work together, online and offline.', 'All', 'code-of-conduct.pdf', 'application/pdf', 154000, false, 40),
+        res('Brand Guidelines', 'Logo use, colours and post templates for the Growth team.', 'All Growth', 'brand-guidelines.pdf', 'application/pdf', 530000, false, 18),
+        res('Equity Research Primer', 'Reading filings, building a thesis and writing the one-pager.', 'Equity Research', 'equity-research-primer.pdf', 'application/pdf', 330000, false, 10)
+      ];
+      const byEmail = e => members.find(m => m.email === e);
+      const logs = [];
+      const log = (email, title, action, hoursAgo) => {
+        const m = byEmail(email), r = resources.find(x => x.title === title);
+        logs.push({ id: logs.length + 1, member_id: m.id, member_name: m.name, member_code: m.member_code, resource_id: r.id, resource_title: r.title, action, created_at: new Date(Date.now() - hoursAgo*3600000).toISOString() });
+      };
+      log('tom.h@demo.example','M&A Analyst Handbook','view',2); log('priya.n@demo.example','Equity Research Primer','view',5);
+      log('priya.n@demo.example','Valuation Model Template','download',6); log('leo.w@demo.example','Research Style Guide','view',26);
+      log('ana.r@demo.example','Brand Guidelines','view',30); log('tom.h@demo.example','Valuation Model Template','download',50);
+      log('leo.w@demo.example','Code of Conduct','view',74);
+      return { users, members, resources, logs, session: null, nextLog: logs.length + 1 };
+    }
+
+    let db;
+    try{ db = JSON.parse(sessionStorage.getItem(KEY) || 'null'); }catch(e){ db = null; }
+    if(!db) db = seed();
+    const save = () => { try{ sessionStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} };
+    save();
+
+    const me = () => db.session ? db.users.find(u => u.id === db.session.user.id) : null;
+    const isAdmin = () => !!(me() && me().admin);
+    const myMember = () => db.session ? db.members.find(m => m.user_id === db.session.user.id) : null;
+    const err = message => ({ data: null, error: { message } });
+    const sessionFor = u => ({ access_token: 'demo', user: { id: u.id, email: u.email, user_metadata: clone(u.meta || {}) } });
+    const canRead = div => {
+      const m = myMember();
+      return !!m && m.approved && !m.revoked && !!m.signed_at &&
+        (div === 'All' || div === m.division || (div === 'All Research' && m.vertical === 'Research') || (div === 'All Growth' && m.vertical === 'Growth'));
+    };
+
+    // Table rules (the same ones schema.sql enforces with RLS and triggers)
+    const rules = {
+      members: {
+        read: r => isAdmin() || (db.session && r.user_id === db.session.user.id),
+        insert(o){
+          const now = new Date().toISOString();
+          const row = Object.assign({ id: uuid(), user_id: null, member_code: 'M-' + String(db.members.length + 1).padStart(4, '0'), name:'', preferred:'', phone:'', university:'', chapter:'', timezone:'', linkedin:'', country:'', first_participation:'', adult:'', vertical:'', division:'', role:'', approved:false, approved_at:null, revoked:false, revoked_at:null, signed_at:null, signed_name:null, signature:null, nda_version:null, nda_path:null, handbook_at:null, source:'self', created_at: now, updated_at: now }, o);
+          if(db.members.some(m => m.email.toLowerCase() === String(row.email).toLowerCase())) return 'duplicate key value violates unique constraint';
+          if(!isAdmin()){
+            if(myMember()) return 'permission denied';
+            Object.assign(row, { user_id: db.session.user.id, email: db.session.user.email, approved:false, approved_at:null, revoked:false, signed_at:null, signature:null, source:'self' });
+          }
+          db.members.push(row); return row;
+        },
+        update(row, p){
+          if(!isAdmin()){
+            if(row.user_id !== db.session.user.id) return null;
+            const locked = ['approved','approved_at','revoked','revoked_at','vertical','division','role','email','member_code','user_id','source'];
+            if(locked.some(k => k in p && p[k] !== row[k])) return 'permission denied';
+            if('signed_at' in p){
+              if(row.signed_at) return 'Already signed';
+              if(!row.approved) return 'The team has not approved you yet';
+              if(row.revoked) return 'permission denied';
+              if(row.adult !== 'yes') return 'Members under 18 need a guardian to sign';
+              p = Object.assign({}, p, { signed_at: new Date().toISOString() });
+            }
+          }
+          Object.assign(row, p, { updated_at: new Date().toISOString() }); return row;
+        },
+        remove: () => isAdmin()
+      },
+      resources: {
+        read: r => isAdmin() || canRead(r.division),
+        insert(o){ if(!isAdmin()) return 'permission denied'; const row = Object.assign({ id: uuid(), description:'', allow_download:false, created_at: new Date().toISOString() }, o); db.resources.push(row); return row; },
+        update(row, p){ if(!isAdmin()) return null; Object.assign(row, p); return row; },
+        remove: () => isAdmin()
+      },
+      access_logs: {
+        read: () => isAdmin(),
+        insert(o){
+          const m = myMember(); if(!m) return 'permission denied';
+          const row = Object.assign({}, o, { id: db.nextLog++, member_id: m.id, member_name: m.name, member_code: m.member_code, created_at: new Date().toISOString() });
+          db.logs.push(row); return row;
+        },
+        update: () => null, remove: () => false
+      }
+    };
+    const tableData = t => t === 'access_logs' ? db.logs : db[t];
+
+    class Query {
+      constructor(t){ this.t = t; this.op = 'select'; this.filters = []; this.ord = null; this.lim = null; }
+      select(){ if(this.op === 'select') this.op = 'select'; this.ret = true; return this; }
+      insert(o){ this.op = 'insert'; this.payload = o; return this; }
+      update(p){ this.op = 'update'; this.payload = p; return this; }
+      delete(){ this.op = 'delete'; return this; }
+      eq(k, v){ this.filters.push(r => r[k] === v); return this; }
+      order(k, o={}){ this.ord = [k, o.ascending !== false]; return this; }
+      limit(n){ this.lim = n; return this; }
+      run(){
+        if(!db.session) return err('JWT expired');
+        const rule = rules[this.t], all = tableData(this.t);
+        const match = r => this.filters.every(f => f(r));
+        if(this.op === 'select'){
+          let rows = all.filter(r => rule.read(r) && match(r));
+          if(this.ord){ const [k, asc] = this.ord; rows = rows.slice().sort((a, b) => String(a[k]).localeCompare(String(b[k])) * (asc ? 1 : -1)); }
+          if(this.lim) rows = rows.slice(0, this.lim);
+          return { data: clone(rows), error: null };
+        }
+        if(this.op === 'insert'){
+          const out = []; for(const o of [].concat(this.payload)){ const r = rule.insert(clone(o)); if(typeof r === 'string') return err(r); out.push(r); }
+          save(); return { data: clone(out), error: null };
+        }
+        if(this.op === 'update'){
+          const out = []; for(const row of all.filter(r => rule.read(r) && match(r))){ const r = rule.update(row, clone(this.payload)); if(typeof r === 'string') return err(r); if(r) out.push(r); }
+          save(); return { data: clone(out), error: null };
+        }
+        if(this.op === 'delete'){
+          if(!rule.remove()) return err('permission denied');
+          const keep = all.filter(r => !match(r)); all.length = 0; all.push(...keep);
+          save(); return { data: [], error: null };
+        }
+      }
+      then(res, rej){ return new Promise(r => setTimeout(() => r(this.run()), 120)).then(res, rej); }
+    }
+
+    // Sample PDFs, built in the browser the first time they're opened
+    const BODY = [
+      ['Purpose', 'This document is sample content for the demo portal. In a real deployment, the team uploads its own handbooks, guides and templates here, and members open them in the protected viewer.'],
+      ['How to use it', 'Read it end to end before your first assignment. Each section builds on the one before, and your reviewer will expect you to follow the process it describes.'],
+      ['The process', 'Every piece of work moves through four stages: research, first draft, peer review and final edit. Keep your draft in the shared workspace so reviewers can comment as you go.'],
+      ['Quality bar', 'Cite every figure. Prefer primary sources such as filings and official statistics. If a number cannot be verified, leave it out rather than estimate it.'],
+      ['Getting help', 'Ask in your team channel first. If something is blocking you for more than a day, tell your division head so the timeline can be adjusted early.']
+    ];
+    async function samplePdf(title, subtitle){
+      await loadScript(LIB.pdflib);
+      const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
+      const doc = await PDFDocument.create();
+      const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
+      const ink = rgb(0.07,0.08,0.14), grey = rgb(0.45,0.46,0.5);
+      const wrap = (t, f, s, w) => { const out = []; let line = ''; t.split(' ').forEach(word => { const test = line ? line + ' ' + word : word; if(f.widthOfTextAtSize(test, s) > w){ out.push(line); line = word; } else line = test; }); if(line) out.push(line); return out; };
+      let p = doc.addPage([595, 842]);
+      p.drawText('ACME', { x:72, y:770, size:10, font:bold, color:grey });
+      wrap(title, bold, 30, 451).forEach((l, i) => p.drawText(l, { x:72, y:520 - i*38, size:30, font:bold, color:ink }));
+      p.drawText(subtitle || 'Sample document for the demo portal', { x:72, y:470, size:12, font, color:grey });
+      p.drawText('Version 1.0', { x:72, y:90, size:10, font, color:grey });
+      for(let pg = 0; pg < 2; pg++){
+        p = doc.addPage([595, 842]); let y = 770;
+        BODY.slice(pg ? 3 : 0, pg ? 5 : 3).forEach(([h, t], i) => {
+          p.drawText(`${pg*3 + i + 1}. ${h}`, { x:72, y, size:15, font:bold, color:ink }); y -= 26;
+          wrap(t, font, 11, 451).forEach(l => { p.drawText(l, { x:72, y, size:11, font, color:ink }); y -= 17; });
+          y -= 22;
+        });
+        p.drawText(`${title} · page ${pg + 2}`, { x:72, y:40, size:8, font, color:grey });
+      }
+      return new Blob([await doc.save()], { type:'application/pdf' });
+    }
+    async function blobFor(bucket, path){
+      if(blobs[bucket + '/' + path]) return blobs[bucket + '/' + path];
+      let b;
+      if(path.endsWith('.csv')){
+        b = new Blob(['Company,Ticker,Share price,Shares (m),Net debt (m),EBITDA (m),EV/EBITDA\nExample Co A,EXA,12.40,850,1200,940,=((C2*D2)+E2)/F2\nExample Co B,EXB,8.15,1320,640,1010,=((C3*D3)+E3)/F3\nExample Co C,EXC,23.90,410,300,1150,=((C4*D4)+E4)/F4\n'], { type:'text/csv' });
+      } else if(path.startsWith('seed/') && bucket === 'library'){
+        const r = db.resources.find(x => x.file_path === path);
+        b = await samplePdf(r ? r.title : 'Sample document', r ? r.description : '');
+      } else if(bucket === 'agreements'){
+        b = await samplePdf('Signed agreement', 'Sample signed record. Records signed during this demo are generated for real.');
+      } else {
+        b = await samplePdf('Uploaded file', 'Files uploaded in the demo are kept only until the page reloads.');
+      }
+      return blobs[bucket + '/' + path] = b;
+    }
+
+    const listeners = [];
+    const emit = (event) => listeners.forEach(cb => { try{ cb(event, db.session ? clone(db.session) : null); }catch(e){} });
+    const later = v => new Promise(r => setTimeout(() => r(v), 250));
+
+    return {
+      demo: true,
+      reset(){ try{ sessionStorage.removeItem(KEY); }catch(e){} location.reload(); },
+      auth: {
+        async getSession(){ return { data: { session: db.session ? clone(db.session) : null }, error: null }; },
+        onAuthStateChange(cb){ listeners.push(cb); return { data: { subscription: { unsubscribe(){} } } }; },
+        async signInWithPassword({ email, password }){
+          const u = db.users.find(x => x.email === String(email).toLowerCase());
+          if(!u || u.password !== password) return later(err('Invalid login credentials'));
+          db.session = sessionFor(u); save(); setTimeout(() => emit('SIGNED_IN'), 0);
+          return later({ data: { user: clone(db.session.user), session: clone(db.session) }, error: null });
+        },
+        async signOut(){ db.session = null; save(); emit('SIGNED_OUT'); return { error: null }; },
+        async updateUser({ password, data }){
+          const u = me(); if(!u) return err('Not signed in');
+          if(password) u.password = password;
+          if(data) u.meta = Object.assign({}, u.meta, data);
+          db.session = sessionFor(u); save();
+          return later({ data: { user: clone(db.session.user) }, error: null });
+        },
+        async resetPasswordForEmail(){ return later(err('Password reset emails are turned off in demo mode. Use one of the demo accounts.')); },
+        async verifyOtp(){ return later(err('Email codes are turned off in demo mode.')); },
+        async resend(){ return later(err('Email codes are turned off in demo mode.')); }
+      },
+      from: t => new Query(t),
+      async rpc(name, args={}){
+        if(name === 'is_admin') return { data: isAdmin(), error: null };
+        if(name === 'claim_member'){
+          if(db.session) db.members.forEach(m => { if(!m.user_id && m.email.toLowerCase() === db.session.user.email.toLowerCase()) m.user_id = db.session.user.id; });
+          save(); return { data: null, error: null };
+        }
+        if(name === 'admin_create_login'){
+          if(!isAdmin()) return err('permission denied');
+          const email = String(args.p_email).toLowerCase();
+          let u = db.users.find(x => x.email === email), created = false;
+          if(!u){ u = { id: uuid(), email, password: DEFAULT_TEMP_PASSWORD, meta: { name: args.p_name || '', must_change_password: true } }; db.users.push(u); created = true; }
+          db.members.forEach(m => { if(!m.user_id && m.email.toLowerCase() === email) m.user_id = u.id; });
+          save(); return later({ data: { created }, error: null });
+        }
+        return err('Unknown function ' + name);
+      },
+      storage: {
+        from: bucket => ({
+          async createSignedUrl(path){
+            if(!db.session) return err('Not signed in');
+            if(bucket === 'library' && !isAdmin()){ const r = db.resources.find(x => x.file_path === path); if(!r || !canRead(r.division)) return err('Object not found'); }
+            if(bucket === 'agreements' && !isAdmin() && !path.startsWith(db.session.user.id + '/')) return err('Object not found');
+            try{ return { data: { signedUrl: URL.createObjectURL(await blobFor(bucket, path)) }, error: null }; }
+            catch(e){ return err('Could not prepare the sample file. Check your connection.'); }
+          },
+          async upload(path, file){
+            if(bucket === 'library' && !isAdmin()) return err('permission denied');
+            if(bucket === 'agreements' && !path.startsWith(db.session.user.id + '/')) return err('permission denied');
+            blobs[bucket + '/' + path] = file; return later({ data: { path }, error: null });
+          },
+          async remove(paths){ paths.forEach(p => delete blobs[bucket + '/' + p]); return { data: null, error: null }; }
+        })
+      }
+    };
+  }
+
+  const $ = s => document.querySelector(s);
+  // Demo mode runs whenever the Supabase keys haven't been filled in.
+  const DEMO = SUPABASE_URL.includes('YOUR-PROJECT');
+  if(DEMO) $('#demoBar').hidden = false;
+  let sb = null;
+  try{
+    sb = window.__portalTestClient || (DEMO ? makeDemoClient() : window.supabase && window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:'implicit' }
+    }));
+  }catch(e){ sb = null; }
+  if(!sb){
+    $('#app').innerHTML = '<div class="fatal"><h1>Portal couldn\'t load</h1><p>Check your internet connection and refresh the page. If it keeps happening, tell the founding team.</p></div>';
+    return;
+  }
+
+  /* ================= ICONS ================= */
+  const I = {
+    overview:'<path d="M3 3h7v7H3zM14 3h7v4h-7zM14 11h7v10h-7zM3 14h7v7H3z"/>',
+    profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+    library:'<path d="M4 4h5v16H4zM10 4h5v16h-5zM16 5l4 1-3 14-4-1z"/>',
+    agreement:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 17c1.5-2 2.5-2 3.5 0s2 2 4.5-1"/>',
+    members:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5c2.5 0 4.5 1.5 5.5 4.5"/>',
+    activity:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/>',
+    lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    out:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/>',
+    x:'<path d="M6 6l12 12M18 6L6 18"/>',
+    copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',
+    arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+    minus:'<path d="M6 12h12"/>',
+    alert:'<path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/>',
+    upload:'<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',
+    download:'<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>',
+    edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>'
+  };
+  const ic = (n, cls='') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${I[n]}</svg>`;
+
+  /* ================= REFERENCE DATA ================= */
+  const VERTICALS = {Research:['M&A','Equity Research','DCM','ECM','Markets'], Growth:['Growth & Strategy','Partnerships & Outreach','Social Media']};
+  const ROLES = {Research:['Analyst','Senior Analyst','Head of Division'], Growth:['Specialist','Deputy Head','Head']};
+  const CHAPTERS = ['Global remote team','London','Singapore'];
+  const forMember = (r, m) => !!m && (r.division==='All' || r.division===m.division || (r.division==='All Research' && m.vertical==='Research') || (r.division==='All Growth' && m.vertical==='Growth'));
+  const divLabel = d => d==='All' ? 'All members' : d==='All Research' ? 'All of Research' : d==='All Growth' ? 'All of Growth' : d;
+  const divOptions = sel => `<option value="All" ${sel==='All'?'selected':''}>All members (general)</option><optgroup label="Research"><option value="All Research" ${sel==='All Research'?'selected':''}>All of Research</option>${VERTICALS.Research.map(d=>`<option value="${esc(d)}" ${sel===d?'selected':''}>${esc(d)}</option>`).join('')}</optgroup><optgroup label="Growth"><option value="All Growth" ${sel==='All Growth'?'selected':''}>All of Growth</option>${VERTICALS.Growth.map(d=>`<option value="${esc(d)}" ${sel===d?'selected':''}>${esc(d)}</option>`).join('')}</optgroup>`;
+  const CONTACTS = [['Alex','Founder & Director'],['Sam','Head of Research'],['Jordan','Head of Operations']];
+  const REQUIRED = {name:'Full name',email:'Email',phone:'Phone',university:'University',chapter:'Chapter',country:'Country of residence',timezone:'Time zone',firstParticipation:'Date of first participation',adult:'Aged 18 or over',vertical:'Vertical',division:'Division',role:'Role'};
+  const isPpt = name => /\.(pptx?|potx)$/i.test(name||'');
+
+  /* ================= STATE ================= */
+  const S = {
+    booted:false, session:null, isAdmin:false, loading:false, recovering:false,
+    members:[], me:null, resources:[], logs:null,
+    mode:'member', tab:'overview', adminTab:'members',
+    filter:'mine', q:'', statusF:'all', editing:false,
+    auth:'login', authEmail:'', pendingPw:'', cooldown:0, sending:false, uploading:false, signing:false,
+    actQ:'', actType:'all', pendingRender:false, confirmFile:null
+  };
+  const fromRow = r => ({
+    id:r.id, userId:r.user_id, code:r.member_code, email:r.email||'', name:r.name||'', preferred:r.preferred||'',
+    phone:r.phone||'', university:r.university||'', chapter:r.chapter||'', timezone:r.timezone||'', linkedin:r.linkedin||'',
+    country:r.country||'', firstParticipation:r.first_participation||'', adult:r.adult||'',
+    vertical:r.vertical||'', division:r.division||'', role:r.role||'',
+    approved:!!r.approved, approvedAt:r.approved_at, revoked:!!r.revoked, revokedAt:r.revoked_at,
+    signedAt:r.signed_at, signedName:r.signed_name, signature:r.signature, ndaVersion:r.nda_version, ndaPath:r.nda_path,
+    handbookAt:r.handbook_at, source:r.source, createdAt:r.created_at, updatedAt:r.updated_at
+  });
+
+  /* ================= HELPERS ================= */
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const norm = s => String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
+  const initials = n => String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('') || '?';
+  const missing = m => Object.keys(REQUIRED).filter(k => !String(m[k]||'').trim());
+  const complete = m => missing(m).length === 0;
+  const stateOf = m => m.revoked ? 'revoked' : !m.approved ? 'approval' : !complete(m) ? 'details' : !m.signedAt ? 'signature' : 'active';
+  const hasAccess = m => !!m && stateOf(m) === 'active';
+  const onboardCount = m => [m.approved, complete(m), !!m.signedAt, !!m.handbookAt].filter(Boolean).length;
+  const roleLine = m => [m.division, m.role].filter(Boolean).join(' ') || 'Role not set';
+  const fmtDate = iso => { if(!iso) return ''; const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(iso+'T00:00:00') : new Date(iso); return isNaN(d) ? String(iso) : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); };
+  const fmtDT = iso => iso ? `${fmtDate(iso)}, ${new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}` : '';
+  const nowISO = () => new Date().toISOString();
+  const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  const fmtSize = b => !b ? '' : b < 1024*1024 ? Math.max(1, Math.round(b/1024)) + ' KB' : (b/1024/1024).toFixed(1) + ' MB';
+  const portalLink = () => location.origin + location.pathname;
+  const myEmail = () => (S.session && S.session.user && S.session.user.email) || '';
+  const adultLabel = v => v==='yes' ? 'Yes' : v==='no' ? 'No' : '';
+  function ago(iso){
+    if(!iso) return '';
+    const s = Math.max(0, (Date.now() - new Date(iso).getTime())/1000);
+    if(s < 60) return 'Just now'; if(s < 3600) return Math.floor(s/60)+' min ago';
+    if(s < 86400) return Math.floor(s/3600)+' hr ago'; if(s < 86400*7) return Math.floor(s/86400)+' d ago';
+    return fmtDate(iso);
+  }
+  function chip(st){
+    return {
+      active:'<span class="chip ok"><span class="d"></span>Active</span>',
+      approval:'<span class="chip warn"><span class="d"></span>Pending approval</span>',
+      signature:'<span class="chip warn"><span class="d"></span>NDA not signed</span>',
+      details:'<span class="chip warn"><span class="d"></span>Details missing</span>',
+      revoked:'<span class="chip bad"><span class="d"></span>Access revoked</span>'
+    }[st];
+  }
+  function toast(msg, bad){ const t = $('#toast'); t.textContent = msg; t.classList.toggle('bad', !!bad); t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('on'), 4200); }
+  const opts = (list, val, blank) => (blank?`<option value="">${blank}</option>`:'') + list.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('');
+  const fileKind = r => {
+    const t = (r.file_type||'').toLowerCase(), n = (r.file_name||'').toLowerCase();
+    if(t.includes('pdf') || n.endsWith('.pdf')) return 'PDF';
+    if(t.startsWith('video/') || /\.(mp4|mov|webm)$/.test(n)) return 'VIDEO';
+    if(t.startsWith('image/')) return 'IMG';
+    if(/\.(pptx?|potx|key)$/.test(n)) return 'PPT';
+    if(/\.(xlsx?|csv)$/.test(n)) return 'XLS';
+    if(/\.(docx?)$/.test(n)) return 'DOC';
+    return 'FILE';
+  };
+  function friendly(err){
+    const m = String((err && (err.message || err.error_description || err.error || err.msg)) || err || '');
+    if(/demo mode/i.test(m)) return m;
+    if(/invalid login credentials/i.test(m)) return 'Wrong email or password. If you joined before passwords existed, use "Forgot password" to set one.';
+    if(/email not confirmed/i.test(m)) return 'Confirm your email first. Enter the code we emailed you.';
+    if(/user already registered|already been registered/i.test(m)) return 'An account with this email already exists. Log in, or use "Forgot password".';
+    if(/password should be|password.*(at least|characters)|weak password/i.test(m)) return 'Choose a longer password, at least 8 characters.';
+    if(/same.*password|different from the old/i.test(m)) return 'Choose a password you haven\'t used before.';
+    if(/token has expired|invalid.*(token|otp)|otp.*(expired|invalid)/i.test(m)) return 'That code is wrong or has expired. Request a new one and try again.';
+    if(/rate limit|too many|429|security purposes/i.test(m)) return 'Too many attempts. Wait a minute, then try again.';
+    if(/approved you/i.test(m)) return 'You can sign once the team has approved you.';
+    if(/complete your details/i.test(m)) return 'Complete your details before signing.';
+    if(/under 18|guardian/i.test(m)) return 'Members under 18 need a parent or guardian to sign. Contact the team at hello@acme.example.';
+    if(/duplicate|unique|already exists/i.test(m)) return 'This already exists.';
+    if(/payload too large|maximum allowed size|exceeded the maximum/i.test(m)) return `That file is too big. The limit is ${MAX_UPLOAD_MB} MB.`;
+    if(/row-level security|permission|not allowed|violates|unauthorized|403/i.test(m)) return 'You don\'t have permission to do that.';
+    if(/sending (magic link|confirmation|recovery)? ?email|smtp|535|authentication failed|username and password/i.test(m)) return 'Couldn\'t send the email. The portal\'s email settings need fixing. (' + m + ')';
+    if(/failed to fetch|networkerror|network request/i.test(m)) return 'Couldn\'t reach the server. Check your connection and try again.';
+    return 'Something went wrong. Try again, and tell the team if it keeps happening.' + (m ? ' (' + m + ')' : '');
+  }
+  async function run(fn, okMsg){
+    try{ const r = await fn(); if(r && r.error) throw r.error; if(okMsg) toast(okMsg); return r || true; }
+    catch(e){ console.error(e); toast(friendly(e), true); return null; }
+  }
+  const scripts = {};
+  function loadScript(src){
+    if(!scripts[src]) scripts[src] = new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => { delete scripts[src]; rej(new Error('Failed to load a viewer component. Check your connection.')); }; document.head.appendChild(s); });
+    return scripts[src];
+  }
+  const b64ToBytes = b64 => { const bin = atob(b64); const out = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i); return out; };
+  const dataUrlBytes = u => b64ToBytes(u.split(',')[1]);
+
+  /* ================= DATA ================= */
+  function busy(){ return S.signing || (S.mode==='member' && S.tab==='nda' && strokes>0 && $('#sForm')) || (MS && MS.kind==='editfile') || (MS && MS.kind==='password'); }
+  async function loadAll(background){
+    if(!S.session) return;
+    const uid = S.session.user.id;
+    const [mr, rr] = await Promise.all([
+      sb.from('members').select('*'),
+      sb.from('resources').select('*').order('created_at', {ascending:false})
+    ]);
+    if(mr.error){ console.error(mr.error); toast(friendly(mr.error), true); }
+    S.members = (mr.data || []).map(fromRow);
+    S.me = S.members.find(m => m.userId === uid) || null;
+    S.resources = rr.error ? [] : (rr.data || []);
+    if(background && busy()){ S.pendingRender = true; return; }
+    S.pendingRender = false; render();
+  }
+  async function loadLogs(){
+    const { data, error } = await sb.from('access_logs').select('*').order('created_at', {ascending:false}).limit(500);
+    if(error){ toast(friendly(error), true); S.logs = []; } else S.logs = data || [];
+    render();
+  }
+  function logAccess(r, action){
+    if(S.mode==='admin' || !S.me) return;
+    try{ sb.from('access_logs').insert({ resource_id:r.id, resource_title:r.title, action }).then(()=>{}, ()=>{}); }catch(e){}
+  }
+  let reloadT = null;
+  const scheduleReload = () => { clearTimeout(reloadT); reloadT = setTimeout(()=>loadAll(true), 350); };
+  let channel = null;
+  function subscribe(){
+    if(channel || !sb.channel) return;
+    try{
+      channel = sb.channel('portal-live')
+        .on('postgres_changes', {event:'*', schema:'public', table:'members'}, scheduleReload)
+        .on('postgres_changes', {event:'*', schema:'public', table:'resources'}, scheduleReload)
+        .subscribe();
+    }catch(e){ channel = null; }
+  }
+  function unsubscribe(){ if(channel){ try{ sb.removeChannel(channel); }catch(e){} channel = null; } }
+
+  async function afterAuth(){
+    if(!S.session){ S.members=[]; S.me=null; S.resources=[]; S.logs=null; S.isAdmin=false; S.mode='member'; unsubscribe(); render(); return; }
+    S.loading = true; render();
+    try{ await sb.rpc('claim_member'); }catch(e){}
+    try{ const r = await sb.rpc('is_admin'); S.isAdmin = r && r.data === true; }catch(e){ S.isAdmin = false; }
+    await loadAll();
+    S.loading = false;
+    if(S.isAdmin && !S.me) S.mode = 'admin';
+    subscribe(); render();
+  }
+
+  /* ================= AUTH SCREENS ================= */
+  const authShell = (left, right) => `<div class="auth">
+      <section class="auth-l"><canvas id="grain" aria-hidden="true"></canvas><div class="wordmark">ACME</div>${left}<div class="tag">Your tagline here</div></section>
+      <section class="auth-r"><div class="auth-card">${right}</div></section></div>`;
+  const authLeft = `<div><span class="label" style="color:var(--cream)">Member Portal</span><h1>Your desk, your materials, one login.</h1>
+      <p>Handbooks, templates and training live here instead of a shared Drive. Access is personal and closes the day you leave the team.</p></div>`;
+  function authView(){
+    const a = S.auth, em = esc(S.authEmail);
+    const btn = (label, busyLabel) => `<div style="margin-top:18px"><button type="submit" class="btn pri" ${S.sending?'disabled':''}>${S.sending?busyLabel:label}</button></div>`;
+    let right = '';
+    if(a === 'login') right = `
+      <h2>Log in</h2>
+      <p>Enter the email you applied with and the temporary password provided in your onboarding email.</p>
+      <form id="loginForm" novalidate>
+        <div class="form">
+          <div class="field">
+            <label for="l-email">Email</label>
+            <input id="l-email" type="email" autocomplete="email" placeholder="name@university.edu">
+          </div>
+          <div class="field">
+            <label for="l-pw">Temporary / Account Password</label>
+            <input id="l-pw" type="password" autocomplete="current-password">
+          </div>
+        </div>
+        <p class="err" id="authErr" style="margin:14px 0 0"></p>
+        <div style="margin-top:18px"><button type="submit" class="btn pri">Log in</button></div>
+      </form>
+      <div class="auth-links">
+        <button type="button" class="linkbtn" data-auth="forgot">Forgot or reset password?</button>
+      </div>${DEMO ? `<div class="demo-pick"><span class="label">Demo · try it with sample data</span>
+        <button type="button" class="demo-acct" data-act="demoLogin" data-who="member"><b>Log in as a member</b><span>Sign the NDA and unlock the library</span></button>
+        <button type="button" class="demo-acct" data-act="demoLogin" data-who="admin"><b>Log in as an admin</b><span>Approve members, upload files, see activity</span></button>
+        <p>Or type <span class="mono">member@demo.example</span> or <span class="mono">admin@demo.example</span> with the password <span class="mono">demo</span>.</p></div>` : ''}`;
+    if(a === 'verify') right = `
+      <div class="inbox"><span class="mailicon">${ic('mail')}</span><h2>Confirm your email</h2>
+      <p style="margin:0;color:var(--muted)">We sent a 6-digit code to <b class="addr">${em}</b>. Enter it below. Check spam if you can't see it.</p></div>
+      <form id="verifyForm" novalidate style="margin-top:18px"><div class="form">
+        <div class="field"><label for="v-code">Code</label><input id="v-code" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></div>
+      </div><p class="err" id="authErr" style="margin:14px 0 0"></p>${btn('Confirm email','Checking…')}</form>
+      <div class="auth-links"><button type="button" class="linkbtn" id="resend" ${S.cooldown>0?'disabled':''}>${S.cooldown>0?`Resend code in ${S.cooldown}s`:'Resend code'}</button>
+        <button type="button" class="linkbtn" data-auth="login">Back to log in</button></div>`;
+    if(a === 'forgot') right = `
+      <h2>Reset your password</h2><p>We'll email you a 6-digit code to set a new password.</p>
+      <form id="forgotForm" novalidate><div class="form">
+        <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email" value="${em}"></div>
+      </div><p class="err" id="authErr" style="margin:14px 0 0"></p>${btn('Email me a code','Sending…')}</form>
+      <div class="auth-links"><button type="button" class="linkbtn" data-auth="login">Back to log in</button></div>`;
+    if(a === 'reset') right = `
+      <h2>Set a new password</h2><p>Enter the code we sent to <b class="addr">${em}</b> and choose a new password.</p>
+      <form id="resetForm" novalidate><div class="form">
+        <div class="field"><label for="r-code">Code</label><input id="r-code" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></div>
+        <div class="field"><label for="r-pw">New password</label><input id="r-pw" type="password" autocomplete="new-password"><span class="hint">At least 8 characters.</span></div>
+        <div class="field"><label for="r-pw2">Confirm new password</label><input id="r-pw2" type="password" autocomplete="new-password"></div>
+      </div><p class="err" id="authErr" style="margin:14px 0 0"></p>${btn('Save new password','Saving…')}</form>
+      <div class="auth-links"><button type="button" class="linkbtn" id="resendReset" ${S.cooldown>0?'disabled':''}>${S.cooldown>0?`Resend code in ${S.cooldown}s`:'Resend code'}</button><button type="button" class="linkbtn" data-auth="login">Back to log in</button></div>`;
+    return authShell(authLeft, right);
+  }
+  function newPassView(){
+    const first = mustChangePw();
+    return authShell(authLeft, `<h2>${first ? 'Choose your own password' : 'Choose a new password'}</h2><p>${first ? `Welcome to Acme. You're signed in as ${esc(myEmail())} with your starting password. Replace it with one only you know.` : `You're signed in as ${esc(myEmail())}. Set a password to finish.`}</p>
+      <form id="newPassForm" novalidate><div class="form">
+        <div class="field"><label for="n-pw">New password</label><input id="n-pw" type="password" autocomplete="new-password"><span class="hint">At least 8 characters.</span></div>
+        <div class="field"><label for="n-pw2">Confirm new password</label><input id="n-pw2" type="password" autocomplete="new-password"></div>
+      </div><p class="err" id="authErr" style="margin:14px 0 0"></p><div style="margin-top:18px"><button type="submit" class="btn pri">Save password</button></div></form>`);
+  }
+  function drawGrain(){
+    const c = $('#grain'); if(!c) return;
+    const r = c.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio||1);
+    c.width = r.width*dpr; c.height = r.height*dpr;
+    const x = c.getContext('2d'); x.scale(dpr,dpr);
+    for(let yy=18; yy<r.height; yy+=18){
+      for(let xx=18; xx<r.width; xx+=18){
+        const dx = xx - r.width*0.85, dy = yy - r.height*0.15;
+        const a = Math.max(0, 0.5 - (Math.sqrt(dx*dx+dy*dy) / Math.max(r.width, r.height))*0.75);
+        if(a <= 0.02) continue;
+        x.fillStyle = `rgba(223,220,201,${a.toFixed(3)})`; x.beginPath(); x.arc(xx, yy, 0.9, 0, Math.PI*2); x.fill();
+      }
+    }
+  }
+  let cdTimer = null;
+  function startCooldown(){
+    S.cooldown = 60; clearInterval(cdTimer);
+    cdTimer = setInterval(() => {
+      S.cooldown--;
+      ['resend','resendReset'].forEach(id => { const b = document.getElementById(id); if(b){ b.disabled = S.cooldown>0; b.textContent = S.cooldown>0?`Resend code in ${S.cooldown}s`:'Resend code'; } });
+      if(S.cooldown<=0) clearInterval(cdTimer);
+    }, 1000);
+  }
+  const authErr = msg => { const e = $('#authErr'); if(e) e.textContent = msg; else toast(msg, true); };
+  const setSending = v => { S.sending = v; const b = document.querySelector('.auth-card button[type=submit]'); if(b){ b.disabled = v; } };
+
+  /* ================= CREATE PROFILE ================= */
+  function createView(){
+    return authShell(`<div><span class="label" style="color:var(--cream)">Welcome</span><h1>Let's set up your profile.</h1><p>Tell us your role. The founding team will approve you, then your NDA and library unlock.</p></div>`, `
+        <h2>Create your profile</h2><p>Signed in as ${esc(myEmail())}.</p>
+        <form id="createForm" novalidate><div class="form two">
+          <div class="field full"><label for="c-name">Full name <span class="req">*</span></label><input id="c-name" autocomplete="name"></div>
+          <div class="field"><label for="c-vertical">Vertical <span class="req">*</span></label><select id="c-vertical">${opts(Object.keys(VERTICALS),'Research')}</select></div>
+          <div class="field"><label for="c-division">Division <span class="req">*</span></label><select id="c-division">${opts(VERTICALS.Research,'M&A')}</select></div>
+          <div class="field full"><label for="c-role">Role <span class="req">*</span></label><select id="c-role">${opts(ROLES.Research,'Analyst')}</select></div>
+        </div>
+        <p class="err" id="createErr" style="margin:14px 0 0"></p>
+        <div style="margin-top:18px"><button type="submit" class="btn pri">Create profile</button></div></form>
+        <div class="auth-admin"><span>Wrong account?</span><button type="button" class="btn sm ghost" data-act="signout">${ic('out')} Sign out</button></div>
+        ${S.isAdmin?`<div class="auth-admin" style="margin-top:12px;border-top:0;padding-top:0"><span>You manage this portal.</span><button type="button" class="btn sm" data-mode="admin">${ic('key')} Open admin</button></div>`:''}`);
+  }
+
+  /* ================= SHELL ================= */
+  function shell(content){
+    const m = S.me, admin = S.mode === 'admin';
+    const nav = admin
+      ? [['members','Members','members'],['library','Library files','library'],['activity','Activity','activity']]
+      : [['overview','Overview','overview'],['profile','Profile','profile'],['library','Library','library'],['nda','NDA','agreement']];
+    const cur = admin ? S.adminTab : S.tab;
+    return `<div class="shell">
+      <aside class="side">
+        <div class="brand"><div class="wordmark">ACME</div><span class="label">${admin?'Admin console':'Member portal'}</span></div>
+        ${S.isAdmin ? `<div class="modes" role="group" aria-label="Switch view">
+          <button type="button" data-mode="member" aria-pressed="${!admin}">Member</button>
+          <button type="button" data-mode="admin" aria-pressed="${admin}">Admin</button></div>` : ''}
+        <nav class="nav" aria-label="Sections"><span class="label">${admin?'Manage':'Your space'}</span>
+          ${nav.map(([k,l,icn]) => {
+            const locked = !admin && k==='library' && !hasAccess(m);
+            return `<button type="button" data-nav="${k}" ${cur===k?'aria-current="page"':''}>${ic(icn)}${l}${locked?`<span class="end">${ic('lock')}</span>`:''}</button>`;
+          }).join('')}
+        </nav>
+        <div class="side-foot">
+          <div class="conn live"><span class="dot"></span>Signed in · ${esc(myEmail())}</div>
+          <div class="whoami"><span class="av">${admin?ic('key'):esc(initials(m?m.name:myEmail()))}</span><div class="t"><b>${admin?'Founding team':esc(m?(m.preferred||m.name):myEmail())}</b><span class="num">${admin?`${S.members.length} member${S.members.length===1?'':'s'}`:esc(m?m.code:'')}</span></div>
+            <button type="button" class="iconbtn" data-act="password" aria-label="Change password" title="Change password">${ic('key')}</button>
+            <button type="button" class="iconbtn" data-act="signout" aria-label="Sign out" title="Sign out">${ic('out')}</button></div>
+        </div>
+      </aside>
+      <main id="main">${content}</main>
+    </div>`;
+  }
+
+  /* ================= MEMBER VIEWS ================= */
+  function notice(m){
+    const st = stateOf(m);
+    if(st === 'revoked') return `<div class="notice bad"><div><b>Your access has been removed</b><p>Your membership has ended, so handbooks, templates and recordings are closed. Work you published stays credited to you. If this is a mistake, contact the founding team.</p></div></div>`;
+    if(st === 'approval') return `<div class="notice"><div><b>Waiting for approval</b><p>The founding team will confirm you're on the team, then your NDA and library unlock.${complete(m)?' Your details are complete, so there is nothing else to do for now.':' In the meantime, finish your details: '+missing(m).map(k=>REQUIRED[k]).join(', ')+'.'}</p></div>${complete(m)?'':'<button type="button" class="btn pri" data-nav="profile" data-edit="1">Complete details</button>'}</div>`;
+    if(st === 'details') return `<div class="notice"><div><b>Finish your details to continue</b><p>${missing(m).length} required field${missing(m).length===1?'':'s'} left: ${missing(m).map(k=>REQUIRED[k]).join(', ')}.</p></div><button type="button" class="btn pri" data-nav="profile" data-edit="1">Complete details</button></div>`;
+    if(st === 'signature'){
+      if(m.adult === 'no') return `<div class="notice"><div><b>A parent or guardian needs to sign with you</b><p>Members under 18 can't sign the NDA in the portal. Email hello@acme.example and the team will send you the guardian form.</p></div></div>`;
+      return `<div class="notice"><div><b>Sign the Acme NDA to unlock your library</b><p>Your handbooks, templates and recordings open inside the portal once you sign.</p></div><button type="button" class="btn pri" data-nav="nda">Review and sign</button></div>`;
+    }
+    return '';
+  }
+  function detailList(m){
+    const rows = [['Vertical',m.vertical],['Division',m.division],['Role',m.role],['Chapter',m.chapter],['Email',m.email],['Phone',m.phone],['University',m.university],['Country of residence',m.country],['Time zone',m.timezone],['First participation',fmtDate(m.firstParticipation)],['Aged 18 or over',adultLabel(m.adult)],['LinkedIn',m.linkedin,true]];
+    return `<dl class="dl">${rows.map(([k,v,opt])=>`<div><dt class="label">${k}</dt>${String(v||'').trim()?`<dd>${esc(v)}</dd>`:`<dd class="empty">${opt?'Not added':'Missing'}</dd>`}</div>`).join('')}</dl>`;
+  }
+  function overview(m){
+    const steps = [
+      {done:m.approved, t:'Get approved by the team', s:m.approved?`Approved ${fmtDate(m.approvedAt||m.createdAt)}`:'The founding team confirms you are on the team', b:m.approved?'Done':'Pending', dis:true},
+      {done:complete(m), t:'Complete your details', s:complete(m)?'All required fields filled':`${missing(m).length} field${missing(m).length===1?'':'s'} missing`, b:complete(m)?'Edit':'Complete', nav:'profile', edit:!complete(m)},
+      {done:!!m.signedAt, t:'Sign the Acme NDA', s:m.signedAt?`Signed ${fmtDT(m.signedAt)}`:(!m.approved?'Available once you are approved':complete(m)?'Unlocks the full library':'Available once details are complete'), b:m.signedAt?'View':'Sign', nav:'nda', dis:!m.signedAt&&(!complete(m)||!m.approved)},
+      {done:!!m.handbookAt, t:`Read your ${m.division||'division'} materials`, s:m.handbookAt?`Opened ${fmtDate(m.handbookAt)}`:(hasAccess(m)?'Open one from your library':'Locked until you sign'), b:'Open', nav:'library', dis:!hasAccess(m)}
+    ];
+    const n = steps.filter(s=>s.done).length;
+    const mine = S.resources.filter(r => forMember(r, m)).slice(0,3);
+    return `<div class="page">
+      <header class="ph"><div><span class="label">Overview</span><h1>Welcome, ${esc(m.preferred || String(m.name).split(' ')[0] || 'there')}.</h1>
+        <p>${esc(roleLine(m))} · ${esc(m.chapter||'Chapter not set')}. Everything for your role is in one place.</p></div>
+        <div class="ph-r">${chip(stateOf(m))}</div></header>
+      ${notice(m)}
+      <div class="cols">
+        <section class="panel"><div class="panel-h"><div><h2>Member details</h2><p>Saved to your profile. The founding team sees the same record.</p></div><button type="button" class="btn sm ghost" data-nav="profile" data-edit="1">Edit</button></div>
+          <div class="panel-b">
+            <div class="ident" style="margin-bottom:20px"><span class="av lg">${esc(initials(m.name))}</span><div><h2>${esc(m.name)}</h2><div class="sub"><span class="mono">${esc(m.code)}</span> · Joined ${esc(fmtDate(m.createdAt))}</div></div></div>
+            ${detailList(m)}
+          </div></section>
+        <div class="stack">
+          <section class="panel"><div class="panel-h"><h2>Onboarding</h2></div><div class="panel-b">
+            <div class="meter"><div class="bar"><span style="width:${n*25}%"></span></div><span class="n num">${n} of 4</span></div>
+            <ol class="steps">${steps.map((s,i)=>`<li class="step ${s.done?'done':''}"><span class="mk">${s.done?ic('check'):i+1}</span>
+              <div><div class="t">${s.t}</div><div class="s">${esc(s.s)}</div></div>
+              <button type="button" class="btn sm ghost" ${s.nav?`data-nav="${s.nav}"`:''} ${s.edit?'data-edit="1"':''} ${s.dis?'disabled':''}>${s.b}</button></li>`).join('')}</ol>
+          </div></section>
+          <section class="panel"><div class="panel-h"><h2>Your contacts</h2></div><div class="panel-b">
+            ${CONTACTS.map(([nm,r])=>`<div class="contact"><span class="av">${initials(nm)}</span><div class="t"><b>${esc(nm)}</b><span>${esc(r)}</span></div></div>`).join('')}
+            <p style="margin:12px 0 0;font-size:12.5px;color:var(--dim)">Reach the team on WhatsApp or at hello@acme.example.</p>
+          </div></section>
+        </div>
+      </div>
+      ${hasAccess(m) ? `<section class="stack" style="gap:14px">
+        <div class="toolbar"><h2>Your division materials</h2><button type="button" class="btn sm ghost" data-nav="library">Open library ${ic('arrow')}</button></div>
+        ${mine.length ? `<div class="lib">${mine.map(docCard).join('')}</div>` : '<div class="empty">No materials for your division yet. The team will add them soon.</div>'}
+      </section>` : ''}
+    </div>`;
+  }
+  function profile(m){
+    const e = S.editing;
+    const inp = (id,key,label,opt={}) => `<div class="field ${opt.full?'full':''}"><label for="p-${id}">${label}${REQUIRED[key]&&e&&!opt.lock?' <span class="req">*</span>':''}</label>
+      <input id="p-${id}" value="${esc(m[key]||'')}" ${(!e||opt.lock)?'disabled':''} ${opt.type?`type="${opt.type}"`:''} ${opt.ph?`placeholder="${esc(opt.ph)}"`:''} ${opt.max?`max="${opt.max}"`:''} autocomplete="off">
+      ${opt.hint&&e?`<span class="hint">${opt.hint}</span>`:''}</div>`;
+    const locked = !!m.signedAt;
+    return `<div class="page">
+      <header class="ph"><div><span class="label">Profile</span><h1>${esc(m.name||'Your profile')}</h1>
+        <p>Keep these up to date. They go straight to the founding team's member list.</p></div>
+        <div class="ph-r">${e?'':'<button type="button" class="btn" id="editBtn">Edit details</button>'}</div></header>
+      ${m.revoked?notice(m):''}
+      <form class="panel" id="pForm" novalidate><div class="panel-b">
+        <div class="sect"><h2>Role at Acme</h2><span>Set by the founding team</span></div>
+        <div class="form">
+          <div class="field"><label>Member ID</label><input value="${esc(m.code)}" disabled></div>
+          <div class="field"><label>Vertical</label><input value="${esc(m.vertical)}" disabled></div>
+          <div class="field"><label>Division</label><input value="${esc(m.division)}" disabled></div>
+          <div class="field"><label>Role</label><input value="${esc(m.role)}" disabled></div>
+        </div>
+        <div class="sect"><h2>Your details</h2><span>${e?'Fields marked * are required':'Last updated '+esc(ago(m.updatedAt))}</span></div>
+        <div class="form">
+          ${inp('name','name','Full legal name',{hint: locked?'Your signed NDA keeps the name you signed with.':'Used on your NDA. Write it exactly as on your ID.'})}
+          ${inp('preferred','preferred','Preferred name',{ph:'What the team should call you'})}
+          ${inp('email','email','Login email',{lock:true,hint:'This is the email you log in with. Ask the team to change it.'})}
+          ${inp('phone','phone','Phone',{type:'tel',ph:'+60 12-345 6789',hint:'With country code. Used to add you to your group chat.'})}
+          ${inp('university','university','University',{ph:'e.g. University of London'})}
+          <div class="field"><label for="p-chapter">Chapter${e?' <span class="req">*</span>':''}</label><select id="p-chapter" ${!e?'disabled':''}>${opts(CHAPTERS,m.chapter,'Select a chapter')}</select></div>
+          ${inp('country','country','Country of residence',{ph:'e.g. Singapore'})}
+          ${inp('timezone','timezone','Time zone',{ph:'e.g. Europe/Rome (UTC+1)'})}
+          ${inp('first','firstParticipation','Date of first participation',{type:'date',max:todayISO(),hint:'When you first started working with Acme.'})}
+          <div class="field"><label for="p-adult">Aged 18 or over?${e?' <span class="req">*</span>':''}</label><select id="p-adult" ${!e?'disabled':''}><option value="">Select</option><option value="yes" ${m.adult==='yes'?'selected':''}>Yes</option><option value="no" ${m.adult==='no'?'selected':''}>No</option></select></div>
+          ${inp('linkedin','linkedin','LinkedIn',{ph:'linkedin.com/in/your-name',full:true})}
+        </div>
+        ${e?`<div class="form-foot"><span class="err" id="pErr"></span><div style="display:flex;gap:8px;margin-left:auto"><button type="button" class="btn ghost" id="cancelEdit">Cancel</button><button type="submit" class="btn pri">Save details</button></div></div>`:''}
+      </div></form>
+    </div>`;
+  }
+  function docCard(r){
+    const k = fileKind(r), canView = ['PDF','VIDEO','IMG'].includes(k);
+    return `<article class="doc">
+      <div class="top"><span class="label">${esc(divLabel(r.division))}</span><span class="ft">${k}</span></div>
+      <h3>${esc(r.title)}</h3><p>${esc(r.description||'')}</p>
+      <div class="bt"><span class="num">${esc(fmtSize(r.file_size))}${r.file_size?' · ':''}${r.allow_download?'Downloadable':'View only'}</span>
+        <span style="display:flex;gap:6px">${canView?`<button type="button" class="btn sm" data-open="${esc(r.id)}">View</button>`:''}${r.allow_download?`<button type="button" class="btn sm ${canView?'ghost':''}" data-dl="${esc(r.id)}">${ic('download')} Download</button>`:''}${!canView&&!r.allow_download?`<button type="button" class="btn sm" data-open="${esc(r.id)}">View</button>`:''}</span></div>
+    </article>`;
+  }
+  function library(m){
+    const head = `<header class="ph"><div><span class="label">Library</span><h1>Handbooks and materials</h1>
+        <p>Handbooks open here, watermarked with your name and member ID. Templates can be downloaded. Nothing to keep in a Drive once you leave.</p></div>
+        <div class="ph-r">${hasAccess(m)?'<span class="chip ok"><span class="d"></span>Unlocked</span>':'<span class="chip"><span class="d"></span>Locked</span>'}</div></header>`;
+    if(!hasAccess(m)){
+      const why = m.revoked ? 'Your access has been removed.' : !m.approved ? 'Your library unlocks once the team approves you and you sign the Acme NDA.' : !complete(m) ? 'Finish your details, then sign the Acme NDA to unlock it.' : 'Sign the Acme NDA to unlock it.';
+      return `<div class="page">${head}${notice(m)}<div class="locked-lib">${ic('lock')}<b style="color:var(--text)">Library locked</b><span>${why}</span></div></div>`;
+    }
+    const fs = [['mine','For you'],['all','Everything'],['Research','Research'],['Growth','Growth'],['All','General'],['templates','Templates']];
+    let list = S.resources;
+    if(S.filter==='mine') list = list.filter(r=>forMember(r, m));
+    else if(S.filter==='Research') list = list.filter(r=>r.division==='All Research' || VERTICALS.Research.includes(r.division));
+    else if(S.filter==='Growth') list = list.filter(r=>r.division==='All Growth' || VERTICALS.Growth.includes(r.division));
+    else if(S.filter==='All') list = list.filter(r=>r.division==='All');
+    else if(S.filter==='templates') list = list.filter(r=>r.allow_download);
+    return `<div class="page">${head}
+      <div class="toolbar"><div class="seg" role="group" aria-label="Filter">${fs.map(([k,l])=>`<button type="button" data-filter="${esc(k)}" aria-pressed="${S.filter===k}">${l}</button>`).join('')}</div>
+        <span class="label num">${list.length} item${list.length===1?'':'s'}</span></div>
+      ${list.length?`<div class="lib">${list.map(docCard).join('')}</div>`:'<div class="empty">Nothing here yet. The team adds materials over time.</div>'}
+    </div>`;
+  }
+
+  /* ================= NDA ================= */
+  // SAMPLE AGREEMENT for demonstration only. Not legal advice. Replace with your own.
+  // Structure: <h3 class="nh"> sections, <p class="nc"> clauses, <p class="ni"> sub-items, <p class="nd"> definitions.
+  const NDA_HTML = `<p>THIS AGREEMENT is dated the date on which it is signed by the Member (the &quot;Effective Date&quot;).</p>
+<h3 class="nh">PARTIES</h3>
+<p class="ni"><b>(1)</b> ACME, contact email hello@acme.example (the &quot;Organisation&quot;); and</p>
+<p class="ni"><b>(2)</b> THE PERSON whose particulars are set out in the Schedule (the &quot;Member&quot;).</p>
+<h3 class="nh">BACKGROUND</h3>
+<p class="ni"><b>(A)</b> The Organisation runs a volunteer programme and shares internal materials with its members.</p>
+<p class="ni"><b>(B)</b> The Member wishes to take part and agrees to keep those materials confidential.</p>
+<h3 class="nh">AGREED TERMS</h3>
+<h3 class="nh"><span>1.</span> DEFINITIONS</h3>
+<p class="nc"><b>1.1</b> In this Agreement the following definitions apply:</p>
+<p class="nd"><b>“Confidential Information”</b> means any non-public information the Member receives in connection with the Organisation, including its materials, plans and the contact details of other members.</p>
+<p class="nd"><b>“Materials”</b> means the handbooks, templates, recordings and other resources the Organisation makes available to the Member.</p>
+<h3 class="nh"><span>2.</span> CONFIDENTIALITY</h3>
+<p class="nc"><b>2.1</b> The Member shall keep the Confidential Information confidential and shall not:</p>
+<p class="ni"><b>(a)</b> share it with anyone outside the Organisation;</p>
+<p class="ni"><b>(b)</b> use it for any purpose other than the Member&#x27;s role; or</p>
+<p class="ni"><b>(c)</b> copy or store it outside the systems the Organisation provides.</p>
+<p class="nc"><b>2.2</b> Clause 2.1 does not apply to information that is already public, or that the Member is required by law to disclose.</p>
+<h3 class="nh"><span>3.</span> INTELLECTUAL PROPERTY</h3>
+<p class="nc"><b>3.1</b> The Materials remain the property of the Organisation. The Member may use them only while this Agreement is in force.</p>
+<h3 class="nh"><span>4.</span> ENDING THIS AGREEMENT</h3>
+<p class="nc"><b>4.1</b> Either party may end this Agreement at any time by written notice. When it ends, the Member shall:</p>
+<p class="ni"><b>(a)</b> stop using the Materials; and</p>
+<p class="ni"><b>(b)</b> delete any copies of the Materials in the Member&#x27;s possession.</p>
+<h3 class="nh"><span>5.</span> GENERAL</h3>
+<p class="nc"><b>5.1</b> Electronic signature. The parties agree that signing this Agreement electronically is valid.</p>
+<p class="nc"><b>5.2</b> Survival. Clause 2 continues after this Agreement ends.</p>`;
+  const NDA_SMALL = new Set(['and','or','of','the','to','in','on','for','a','an']);
+  const titleCase = t => t.toLowerCase().replace(/\b[a-z]+/g, (w,i) => i && NDA_SMALL.has(w) ? w : w[0].toUpperCase()+w.slice(1));
+  let NDA_BUILT = null;
+  function buildNda(){
+    if(NDA_BUILT) return NDA_BUILT;
+    const src = NDA_HTML + '<h3 class="nh">PARENT OR GUARDIAN UNDERTAKING</h3><p>Only for Members under 18. These Members can\'t sign in the portal and should contact the team for the guardian form.</p>';
+    const parts = src.split(/(?=<h3 class="nh">)/);
+    const toc = []; let body = '';
+    parts.forEach(part => {
+      const hm = part.match(/^<h3 class="nh">(?:<span>(\d+)\.<\/span>\s*)?([^<]+)<\/h3>/);
+      if(!hm){ body += part.replace(/^<p>([\s\S]*?)<\/p>/, '<p class="dated">$1</p>'); return; }
+      const num = hm[1] || '', title = titleCase(hm[2].trim());
+      let inner = part.slice(hm[0].length)
+        .replace(/<p class="(nc|ni|nd)"><b>([\s\S]*?)<\/b>\s*([\s\S]*?)<\/p>/g, (m,c,no,rest) => {
+          if(c==='nc' && num==='5') rest = rest.replace(/^([A-Z][a-z]+(?: [a-z]+){0,3})\.\s/, '<span class="lead-in">$1.</span> ');
+          return `<p class="${c}"><b class="no">${no}</b><span>${rest}</span></p>`;
+        });
+      if(!num && /^Agreed Terms$/i.test(title)){ body += '<div class="nkick">Agreed terms</div>'; return; }
+      const id = 'nda-' + (num || title.toLowerCase().replace(/[^a-z]+/g,'-'));
+      const guard = /guardian/i.test(title);
+      const label = guard ? 'Under-18 members' : title;
+      if(toc.length && (num==='1' || guard)) toc.push(null);
+      toc.push({id, num, label});
+      body += `<section class="nsec${num?'':' pre'}${guard?' guard':''}" id="${id}"><h3>${num?`<span class="n">${num}</span>`:''}<span>${title}</span></h3>${inner}</section>`;
+    });
+    return NDA_BUILT = {toc, body};
+  }
+  const ndaDoc = () => { const {toc, body} = buildNda(); return `<div class="ndoc">
+      <div class="ndoc-bar" aria-hidden="true"><i></i></div>
+      <nav class="ntoc" aria-label="Agreement contents"><span class="label">Contents</span>
+        ${toc.map(t => t ? `<button type="button" data-ndago="${t.id}"><span>${t.num ? String(t.num).padStart(2,'0') : '·'}</span>${esc(t.label)}</button>` : '<div class="nsep"></div>').join('')}
+        <div class="nread"><b class="ndpct">0%</b> read</div>
+      </nav>
+      <div class="nda" tabindex="0" aria-label="Acme NDA text">
+        <div class="cover"><span class="between">Acme &nbsp;·&nbsp; and the Member</span>
+          <h2>Member and Non-Disclosure Agreement</h2>
+          <p class="sub">Confidentiality, intellectual property and conduct</p>
+          <div class="meta"><span>Version ${NDA_VERSION}</span><span>5 clauses</span><span>Sample text</span></div></div>
+        ${body}
+        <div class="nend">${ic('agreement')}<span class="nend-t">End of agreement. The Schedule and signing come next.</span></div>
+      </div>
+    </div>`; };
+  let ndaScrollTop = 0;
+  function setupNda(){
+    document.querySelectorAll('.ndoc').forEach(doc => {
+      const sc = doc.querySelector('.nda'), bar = doc.querySelector('.ndoc-bar i'), pct = doc.querySelector('.ndpct');
+      const btns = [...doc.querySelectorAll('[data-ndago]')], secs = [...sc.querySelectorAll('.nsec')];
+      const update = () => {
+        const max = sc.scrollHeight - sc.clientHeight, f = max > 0 ? Math.min(1, sc.scrollTop / max) : 1;
+        bar.style.width = (f*100).toFixed(1) + '%'; if(pct) pct.textContent = Math.round(f*100) + '%';
+        if(f > 0.985){ doc.classList.add('read'); const t = doc.querySelector('.nend-t'); if(t) t.textContent = "You've reached the end. The Schedule and signing come next."; }
+        let cur = secs[0]; secs.forEach(x => { if(x.offsetTop - 60 <= sc.scrollTop) cur = x; });
+        btns.forEach(b => b.classList.toggle('on', !!cur && b.dataset.ndago === cur.id));
+        ndaScrollTop = sc.scrollTop;
+      };
+      btns.forEach(b => b.addEventListener('click', () => { const t = sc.querySelector('#'+b.dataset.ndago); if(t) sc.scrollTo({top: t.offsetTop - 8}); }));
+      sc.addEventListener('scroll', update, {passive:true});
+      if(ndaScrollTop){ sc.style.scrollBehavior = 'auto'; sc.scrollTop = ndaScrollTop; sc.style.scrollBehavior = ''; }
+      update();
+    });
+  }
+  const scheduleRows = m => [['Full name',m.name],['Email address',m.email],['Country of residence',m.country],['Role',m.role],['Division or team',[m.division,m.vertical].filter(Boolean).join(' · ')],['Date of first participation',fmtDate(m.firstParticipation)],['Aged 18 or over? (Yes / No)',adultLabel(m.adult)]];
+  const scheduleTable = m => `<table class="sched">${scheduleRows(m).map(([k,v])=>`<tr><th>${k}</th>${String(v||'').trim()?`<td>${esc(v)}</td>`:'<td class="empty">Missing</td>'}</tr>`).join('')}</table>`;
+  function nda(m){
+    const head = (title, p, extra='') => `<header class="ph"><div><span class="label">Acme NDA · ${NDA_VERSION}</span><h1>${title}</h1>${p?`<p>${p}</p>`:''}</div><div class="ph-r">${extra||chip(stateOf(m))}</div></header>`;
+    if(m.signedAt){
+      return `<div class="page">${head('Signed', `Signed by ${esc(m.signedName||m.name)} on ${esc(fmtDT(m.signedAt))}.`)}
+        ${m.revoked?notice(m):''}
+        <section class="panel"><div class="panel-h"><h2>Signature record</h2>${m.ndaPath?`<button type="button" class="btn sm" data-signedpdf="${esc(m.id)}">${ic('agreement')} Open signed copy</button>`:''}</div><div class="panel-b">
+          <div class="cols" style="align-items:center">${m.signature?`<img class="sigimg" src="${esc(m.signature)}" alt="Your signature">`:'<div class="empty">Signature image not found.</div>'}
+          <dl class="dl"><div><dt class="label">Signed by</dt><dd>${esc(m.signedName||m.name)}</dd></div><div><dt class="label">Member ID</dt><dd class="mono">${esc(m.code)}</dd></div>
+            <div><dt class="label">Date and time</dt><dd class="num">${esc(fmtDT(m.signedAt))}</dd></div><div><dt class="label">Version</dt><dd>${esc(m.ndaVersion||NDA_VERSION)}</dd></div></dl></div>
+        </div></section>
+        <section class="panel"><div class="panel-h"><h2>The agreement you signed</h2></div>${ndaDoc()}</section>
+      </div>`;
+    }
+    if(m.revoked) return `<div class="page">${head('Access removed','')}${notice(m)}</div>`;
+    if(!m.approved) return `<div class="page">${head('Waiting for approval','You can sign once the founding team approves your membership.')}${notice(m)}
+      <section class="panel"><div class="panel-h"><div><h2>Read it in the meantime</h2><p>This is what you'll be asked to sign.</p></div></div>${ndaDoc()}</section></div>`;
+    if(m.adult === 'no') return `<div class="page">${head('Guardian signature needed','')}<div class="notice"><div><b>A parent or guardian needs to sign with you</b><p>Members under 18 can't sign the NDA in the portal. Email hello@acme.example and the team will send you the guardian form.</p></div></div></div>`;
+    if(!complete(m)) return `<div class="page">${head('Details first','Your NDA uses your profile details in its Schedule, so complete them before signing.')}${notice(m)}
+      <section class="panel"><div class="panel-h"><h2>The Schedule</h2><button type="button" class="btn sm ghost" data-nav="profile" data-edit="1">Edit details</button></div><div class="panel-b">${scheduleTable(m)}</div></section></div>`;
+    if(m.adult !== 'yes') return `<div class="page">${head('Guardian signature needed','')}${notice(m)}</div>`;
+    return `<div class="page">
+      ${head('Read, confirm, sign','Signing unlocks your library. Your signed copy is saved as a PDF you can open any time.')}
+      <section class="panel"><div class="panel-h"><div><h2>Member and Non-Disclosure Agreement</h2><p>Scroll to read it in full before signing.</p></div></div>${ndaDoc()}</section>
+      <section class="panel"><div class="panel-h"><div><h2>The Schedule</h2><p>Your particulars, as they'll appear in the agreement.</p></div><button type="button" class="btn sm ghost" data-nav="profile" data-edit="1">Edit details</button></div><div class="panel-b">${scheduleTable(m)}</div></section>
+      <form class="panel" id="sForm" novalidate><div class="panel-h"><div><h2>Execution</h2><p>Draw your signature with your finger, trackpad or mouse.</p></div></div><div class="panel-b">
+        <div class="checks">
+          <label class="ck"><input type="checkbox" id="c1"> I have read and understood the Acme NDA, and agree to be bound by it.</label>
+          <label class="ck"><input type="checkbox" id="c2"> The details in the Schedule are correct, and I am aged 18 or over.</label>
+        </div>
+        <div class="sign-grid">
+          <div class="field"><label for="typed">Type your full name</label><input id="typed" autocomplete="off" placeholder="${esc(m.name)}"><span class="hint">Must match your profile: ${esc(m.name)}</span></div>
+          <div class="field"><label>Signature</label>
+            <div class="pad" id="pad"><span class="base"></span><span class="x">×</span><span class="ph" id="padHint">Sign here</span><canvas id="sig" aria-label="Signature pad"></canvas></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span class="hint num">${esc(fmtDate(nowISO()))}</span><button type="button" class="btn sm ghost" id="clearSig">Clear</button></div></div>
+        </div>
+        <div class="form-foot"><span class="err" id="sErr"></span><button type="submit" class="btn pri" style="margin-left:auto" id="signBtn">${S.signing?'Signing…':'Sign NDA and unlock library'}</button></div>
+      </div></form>
+    </div>`;
+  }
+  let strokes = 0;
+  function setupPad(){
+    const c = $('#sig'); if(!c || c._ready) return; c._ready = true;
+    const pad = $('#pad'), ctx = c.getContext('2d');
+    const r = pad.getBoundingClientRect(), dpr = window.devicePixelRatio||1;
+    c.width = Math.max(1, r.width*dpr); c.height = Math.max(1, r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.lineWidth = 2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#dfdcc9'; ctx.fillStyle='#dfdcc9';
+    strokes = 0; let down=false, last=null;
+    const pt = ev => { const b=c.getBoundingClientRect(); return {x:ev.clientX-b.left, y:ev.clientY-b.top}; };
+    c.addEventListener('pointerdown', ev => { down=true; last=pt(ev); try{ c.setPointerCapture(ev.pointerId); }catch(e){} $('#padHint').hidden=true; ctx.beginPath(); ctx.arc(last.x,last.y,1,0,Math.PI*2); ctx.fill(); strokes++; });
+    c.addEventListener('pointermove', ev => { if(!down) return; const p=pt(ev); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; });
+    const end = () => { down=false; };
+    ['pointerup','pointercancel','pointerleave'].forEach(t => c.addEventListener(t, end));
+    $('#clearSig').onclick = () => { ctx.clearRect(0,0,c.width,c.height); strokes=0; $('#padHint').hidden=false; if(S.pendingRender) flushRender(); };
+  }
+  function exportSig(){
+    const c = $('#sig'), w = Math.round(c.clientWidth), h = Math.round(c.clientHeight);
+    const o = document.createElement('canvas'); o.width = w; o.height = h;
+    const x = o.getContext('2d'); x.fillStyle = '#07081a'; x.fillRect(0,0,w,h); x.drawImage(c,0,0,w,h);
+    return o.toDataURL('image/png');
+  }
+  function exportSigInk(){
+    // Cropped signature in dark ink on a transparent background, for the PDF.
+    const c = $('#sig'), ctx = c.getContext('2d'), W = c.width, H = c.height;
+    const d = ctx.getImageData(0,0,W,H).data;
+    let x0=W, y0=H, x1=-1, y1=-1;
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(d[(y*W+x)*4+3] > 20){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+    if(x1 < 0) return null;
+    const pad = 6; x0=Math.max(0,x0-pad); y0=Math.max(0,y0-pad); x1=Math.min(W-1,x1+pad); y1=Math.min(H-1,y1+pad);
+    const o = document.createElement('canvas'); o.width = x1-x0+1; o.height = y1-y0+1;
+    const ox = o.getContext('2d'); ox.drawImage(c, x0, y0, o.width, o.height, 0, 0, o.width, o.height);
+    ox.globalCompositeOperation = 'source-in'; ox.fillStyle = '#0c0e1e'; ox.fillRect(0,0,o.width,o.height);
+    return o.toDataURL('image/png');
+  }
+  async function makeSignedPdf(m, inkPng, signedAt, typedName){
+    // Builds a one-page signed record: the Schedule, the signature and an audit line.
+    // To stamp onto your own agreement PDF instead, load it with PDFDocument.load(bytes).
+    await loadScript(LIB.pdflib);
+    const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const page = doc.addPage([595, 842]);
+    const ink = rgb(0.05,0.06,0.12), grey = rgb(0.45,0.46,0.5), rule = rgb(0.85,0.85,0.85);
+    const fit = (txt, maxW, size) => { let sz = size; while(sz > 6 && font.widthOfTextAtSize(txt, sz) > maxW) sz -= 0.5; return sz; };
+    let y = 770;
+    page.drawText('ACME', { x:72, y, size:10, font:bold, color:grey }); y -= 34;
+    page.drawText('Member and Non-Disclosure Agreement', { x:72, y, size:18, font:bold, color:ink }); y -= 20;
+    page.drawText(`Version ${NDA_VERSION} · Signed record`, { x:72, y, size:10, font, color:grey }); y -= 44;
+    page.drawText('Schedule', { x:72, y, size:12, font:bold, color:ink }); y -= 24;
+    scheduleRows(Object.assign({}, m, {name: typedName})).forEach(([k, v]) => {
+      const t = String(v||'');
+      page.drawText(k, { x:72, y, size:9.5, font, color:grey });
+      page.drawText(t, { x:260, y, size:fit(t, 263, 10), font, color:ink });
+      page.drawLine({ start:{x:72, y:y-8}, end:{x:523, y:y-8}, thickness:0.5, color:rule });
+      y -= 26;
+    });
+    y -= 30;
+    page.drawText('Signed by the Member', { x:72, y, size:12, font:bold, color:ink }); y -= 54;
+    if(inkPng){
+      const sig = await doc.embedPng(dataUrlBytes(inkPng));
+      let sh = 40, sw = sig.width * (sh / sig.height);
+      if(sw > 240){ sw = 240; sh = sig.height * (sw / sig.width); }
+      page.drawImage(sig, { x:72, y, width:sw, height:sh });
+    }
+    page.drawLine({ start:{x:72, y:y-6}, end:{x:320, y:y-6}, thickness:0.75, color:ink }); y -= 24;
+    const d = new Date(signedAt);
+    const dateTxt = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    page.drawText(typedName, { x:72, y, size:fit(typedName, 248, 10.5), font, color:ink }); y -= 16;
+    page.drawText(dateTxt, { x:72, y, size:10.5, font, color:ink });
+    const trail = `Signed electronically via the Acme Member Portal · ${m.code} · ${m.email} · ${d.toISOString().replace('T',' ').slice(0,19)} UTC · NDA ${NDA_VERSION}`;
+    page.drawText(trail, { x:72, y:28, size:fit(trail, 451, 7), font, color:grey });
+    doc.setTitle(`Acme NDA · ${typedName}`); doc.setAuthor('Acme'); doc.setSubject(`Signed ${dateTxt} · ${m.code}`);
+    return await doc.save();
+  }
+
+  /* ================= ADMIN VIEWS ================= */
+  function adminMembers(){
+    const all = [...S.members].sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+    const cnt = st => all.filter(m=>stateOf(m)===st).length;
+    const q = S.q.trim().toLowerCase();
+    let rows = all.filter(m => !q || [m.name,m.email,m.code,m.division,m.role].some(v=>String(v||'').toLowerCase().includes(q)));
+    if(S.statusF!=='all') rows = rows.filter(m=>stateOf(m)===S.statusF);
+    return `<div class="page">
+      <header class="ph"><div><span class="label">Admin · Members</span><h1>Members and access</h1>
+        <p>New sign-ups land here as Pending approval. Approve the ones on the team, and revoke access the day someone leaves.</p></div>
+        <div class="ph-r"><button type="button" class="btn ghost" data-act="csv">${ic('download')} Download CSV</button><button type="button" class="btn ghost" data-act="copyLink">${ic('copy')} Copy portal link</button><button type="button" class="btn pri" data-act="add">${ic('plus')} Add member</button></div></header>
+      <div class="stats">
+        <div class="stat"><div class="label">Members</div><div class="v num">${all.length}</div></div>
+        <div class="stat"><div class="label">Pending approval</div><div class="v warn num">${cnt('approval')}</div></div>
+        <div class="stat"><div class="label">Details or NDA</div><div class="v warn num">${cnt('details')+cnt('signature')}</div></div>
+        <div class="stat"><div class="label">Active</div><div class="v ok num">${cnt('active')}</div></div>
+        <div class="stat"><div class="label">Revoked</div><div class="v bad num">${cnt('revoked')}</div></div>
+      </div>
+      <section class="panel">
+        <div class="panel-h">
+          <label class="search">${ic('search')}<input id="q" placeholder="Search name, email, ID" value="${esc(S.q)}" aria-label="Search members"></label>
+          <div class="seg" role="group" aria-label="Status">${[['all','All'],['approval','Pending approval'],['details','Details missing'],['signature','NDA not signed'],['active','Active'],['revoked','Revoked']].map(([k,l])=>`<button type="button" data-status="${k}" aria-pressed="${S.statusF===k}">${l}</button>`).join('')}</div>
+        </div>
+        ${!all.length ? `<div class="panel-b"><div class="empty">No members yet. Share the portal link, or add someone yourself.</div></div>`
+          : !rows.length ? '<div class="panel-b"><div class="empty">No members match this search.</div></div>'
+          : `<div class="tw"><table>
+            <thead><tr><th>Member</th><th>Division · Role</th><th>Details</th><th>NDA</th><th>Onboarding</th><th>Status</th><th>Updated</th></tr></thead>
+            <tbody>${rows.map(m=>{ const ms = missing(m); return `<tr data-view="${esc(m.id)}" tabindex="0">
+              <td><div class="who"><span class="av">${esc(initials(m.name||m.email))}</span><div><b>${esc(m.name||'No name yet')}</b><span><span class="mono">${esc(m.code)}</span> · ${esc(m.email)}</span></div></div></td>
+              <td>${esc(m.division||'Not set')}<span class="sub">${esc(m.vertical)}${m.role?' · '+esc(m.role):''}</span></td>
+              <td>${ms.length?`<span class="miss">${ic('alert')} ${ms.length} missing</span>`:`<span class="yes">${ic('check')} Complete</span>`}</td>
+              <td>${m.signedAt?`<span class="yes">${ic('check')} Signed</span><span class="sub num">${esc(fmtDate(m.signedAt))}</span>`:`<span class="no">${ic('minus')} Not signed</span>`}</td>
+              <td class="num">${onboardCount(m)} / 4</td>
+              <td>${stateOf(m)==='approval'?`<button type="button" class="btn sm pri" data-approve="${esc(m.id)}">${ic('check')} Approve</button>`:chip(stateOf(m))}</td>
+              <td class="num" style="color:var(--muted)">${esc(ago(m.updatedAt))}</td></tr>`; }).join('')}</tbody>
+          </table></div>`}
+      </section>
+    </div>`;
+  }
+  function adminLibrary(){
+    const active = S.members.filter(hasAccess);
+    const accessCount = d => active.filter(m => forMember({division:d}, m)).length;
+    return `<div class="page">
+      <header class="ph"><div><span class="label">Admin · Library</span><h1>Library files</h1>
+        <p>Upload handbooks, templates and recordings here instead of the shared Drive. Only active members can open them, and only for as long as they're active.</p></div></header>
+      <form class="panel" id="upForm" novalidate>
+        <div class="panel-h"><div><h2>Upload a file</h2><p>PDFs open in the locked viewer. PowerPoint files are downloadable by default. Max ${MAX_UPLOAD_MB} MB per file.</p></div></div>
+        <div class="panel-b"><div class="upload">
+          <div class="field"><label for="u-title">Title</label><input id="u-title" placeholder="e.g. M&A Analyst Handbook"></div>
+          <div class="field"><label for="u-div">Who it's for</label><select id="u-div">${divOptions('All')}</select></div>
+          <div class="field full" style="grid-column:1/-1"><label for="u-desc">Short description</label><input id="u-desc" placeholder="One line on what's inside"></div>
+          <div class="drop"><input id="u-file" type="file" accept=".pdf,.mp4,.mov,.webm,.png,.jpg,.jpeg,.pptx,.ppt,.potx,.docx,.doc,.xlsx,.xls,.csv"><span class="hint" style="color:var(--dim);font-size:12px">Tip: upload handbooks as PDF so they open in the locked viewer.</span></div>
+          <label class="switch-row"><input type="checkbox" id="u-dl"><div>Allow download<span>Members can save the original file. Turned on automatically for PowerPoint. Every download is logged.</span></div></label>
+        </div>
+        <div class="form-foot"><span class="err" id="upErr"></span><button type="submit" class="btn pri" style="margin-left:auto" ${S.uploading?'disabled':''}>${ic('upload')} ${S.uploading?'Uploading…':'Upload'}</button></div></div>
+      </form>
+      <section class="panel"><div class="panel-h"><div><h2>In the library</h2><p>${S.resources.length} file${S.resources.length===1?'':'s'}</p></div></div>
+        ${S.resources.length ? `<div class="files">${S.resources.map(r=>`<div class="frow"><div><b>${esc(r.title)} ${r.allow_download?'<span class="chip dl" style="margin-left:6px">Downloadable</span>':''}</b><span>${esc(divLabel(r.division))} · ${fileKind(r)}${r.file_size?' · '+esc(fmtSize(r.file_size)):''} · ${accessCount(r.division)} can open · added ${esc(fmtDate(r.created_at))}</span></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${S.confirmFile===r.id
+            ? `<button type="button" class="btn sm ghost" data-act="cancelFile">Cancel</button><button type="button" class="btn sm danger" data-delfile-yes="${esc(r.id)}">Yes, delete</button>`
+            : `<button type="button" class="btn sm" data-open="${esc(r.id)}">Preview</button><button type="button" class="btn sm ghost" data-editfile="${esc(r.id)}">${ic('edit')} Edit</button><button type="button" class="btn sm danger" data-delfile="${esc(r.id)}">Delete</button>`}</div></div>`).join('')}</div>`
+          : '<div class="panel-b"><div class="empty">No files yet. Upload your first handbook above.</div></div>'}
+      </section>
+    </div>`;
+  }
+  function adminActivity(){
+    if(S.logs === null){ setTimeout(loadLogs, 0); return `<div class="page"><header class="ph"><div><span class="label">Admin · Activity</span><h1>Who opened what</h1></div></header><div class="empty">Loading activity…</div></div>`; }
+    const q = S.actQ.trim().toLowerCase();
+    let rows = S.logs.filter(l => (S.actType==='all' || l.action===S.actType) && (!q || [l.member_name,l.member_code,l.resource_title].some(v=>String(v||'').toLowerCase().includes(q))));
+    const views = S.logs.filter(l=>l.action==='view').length, dls = S.logs.filter(l=>l.action==='download').length;
+    return `<div class="page">
+      <header class="ph"><div><span class="label">Admin · Activity</span><h1>Who opened what</h1>
+        <p>Every time a member views or downloads a file, it's recorded here. Members can't see or delete this log.</p></div>
+        <div class="ph-r"><button type="button" class="btn ghost" data-act="reloadLogs">Refresh</button></div></header>
+      <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="stat"><div class="label">Events (latest 500)</div><div class="v num">${S.logs.length}</div></div>
+        <div class="stat"><div class="label">Views</div><div class="v num">${views}</div></div>
+        <div class="stat"><div class="label">Downloads</div><div class="v warn num">${dls}</div></div>
+      </div>
+      <section class="panel">
+        <div class="panel-h"><div class="act-filters"><label class="search">${ic('search')}<input id="aq" placeholder="Search member or file" value="${esc(S.actQ)}" aria-label="Search activity"></label>
+          <select id="atype" aria-label="Type"><option value="all" ${S.actType==='all'?'selected':''}>Views and downloads</option><option value="view" ${S.actType==='view'?'selected':''}>Views only</option><option value="download" ${S.actType==='download'?'selected':''}>Downloads only</option></select></div></div>
+        ${!rows.length ? '<div class="panel-b"><div class="empty">No activity yet.</div></div>' : `<div class="tw"><table>
+          <thead><tr><th>When</th><th>Member</th><th>File</th><th>Action</th></tr></thead>
+          <tbody>${rows.map(l=>`<tr style="cursor:default"><td class="num">${esc(fmtDT(l.created_at))}<span class="sub">${esc(ago(l.created_at))}</span></td>
+            <td><b>${esc(l.member_name||'Unknown')}</b><span class="sub mono">${esc(l.member_code||'')}</span></td>
+            <td>${esc(l.resource_title||'Deleted file')}</td>
+            <td>${l.action==='download'?`<span class="chip warn">${ic('download')} Download</span>`:'<span class="chip">View</span>'}</td></tr>`).join('')}</tbody></table></div>`}
+      </section>
+    </div>`;
+  }
+  function downloadCsv(){
+    const cols = [['Member ID','code'],['Full name','name'],['Preferred name','preferred'],['Email','email'],['Phone','phone'],['University','university'],['Chapter','chapter'],['Country of residence','country'],['Time zone','timezone'],['LinkedIn','linkedin'],['Vertical','vertical'],['Division','division'],['Role','role'],['Date of first participation','firstParticipation'],['Aged 18 or over','adult'],['Status',m=>({active:'Active',approval:'Pending approval',details:'Details missing',signature:'NDA not signed',revoked:'Revoked'})[stateOf(m)]],['Approved at','approvedAt'],['NDA signed at','signedAt'],['NDA version','ndaVersion'],['Joined','createdAt'],['Last updated','updatedAt']];
+    const cell = v => { const s = v==null ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; };
+    const lines = [cols.map(c=>c[0]).join(',')].concat(S.members.map(m => cols.map(([,k]) => cell(typeof k==='function' ? k(m) : m[k])).join(',')));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `acme-members-${todayISO()}.csv`;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    toast(`Downloaded ${S.members.length} member${S.members.length===1?'':'s'}`);
+  }
+
+  /* ================= MODALS ================= */
+  let MS = null;
+  function modal(html){ $('#modalRoot').innerHTML = `<div class="scrim" id="scrim">${html}</div>`; }
+  function closeModal(){ $('#modalRoot').innerHTML = ''; MS = null; document.removeEventListener('keydown', viewerKeys, true); if(viewerState) viewerState.closed = true; viewerState = null; flushRender(); }
+  function flushRender(){ if(S.pendingRender && !busy()){ S.pendingRender = false; render(); } }
+
+  function memberModal(id){
+    const m = S.members.find(x=>x.id===id); if(!m){ closeModal(); return; }
+    const keepSel = MS && MS.id===id && MS.dirty ? {v:$('#a-vertical')?.value, d:$('#a-division')?.value, r:$('#a-role')?.value} : null;
+    MS = Object.assign({kind:'member', id}, MS && MS.id===id ? {confirm:MS.confirm, dirty:MS.dirty} : {});
+    const v = keepSel ? keepSel.v : (VERTICALS[m.vertical] ? m.vertical : 'Research');
+    const mlogs = (S.logs||[]).filter(l => l.member_id === m.id).slice(0,8);
+    modal(`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mm-h">
+      <div class="mh"><div class="ident"><span class="av lg">${esc(initials(m.name||m.email))}</span><div><h2 id="mm-h">${esc(m.name||'No name yet')}</h2><div class="sub"><span class="mono">${esc(m.code)}</span> · Updated ${esc(ago(m.updatedAt))}</div></div></div>
+        <div style="display:flex;gap:10px;align-items:center">${chip(stateOf(m))}<button type="button" class="iconbtn" data-close aria-label="Close">${ic('x')}</button></div></div>
+      <div class="mb">
+        <div class="sect"><h2>Role</h2><span>Only admins can change this</span></div>
+        <div class="form" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+          <div class="field"><label for="a-vertical">Vertical</label><select id="a-vertical">${opts(Object.keys(VERTICALS),v)}</select></div>
+          <div class="field"><label for="a-division">Division</label><select id="a-division">${opts(VERTICALS[v], keepSel?keepSel.d:m.division)}</select></div>
+          <div class="field"><label for="a-role">Role</label><select id="a-role">${opts(ROLES[v], keepSel?keepSel.r:m.role)}</select></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="btn sm" data-act="saveRole">Save role</button></div>
+        <div class="sect"><h2>Details they entered</h2><span>${missing(m).length?`${missing(m).length} missing`:'Complete'}</span></div>
+        ${detailList(m)}
+        <div class="sect"><h2>Acme NDA</h2><span>${m.signedAt?'Signed '+esc(fmtDT(m.signedAt)):'Not signed yet'}</span></div>
+        ${m.signature?`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><img class="sigimg" src="${esc(m.signature)}" alt="Signature of ${esc(m.name)}" style="max-width:240px">${m.ndaPath?`<button type="button" class="btn sm" data-signedpdf="${esc(m.id)}">${ic('agreement')} Open signed NDA</button>`:''}</div>`:'<div class="empty" style="padding:20px">No signature on file.</div>'}
+        <div class="sect"><h2>Onboarding</h2><span class="num">${onboardCount(m)} of 4</span></div>
+        <dl class="dl">
+          <div><dt class="label">Approval</dt><dd>${m.approved?'Approved '+esc(fmtDate(m.approvedAt||m.createdAt)):'Pending'}</dd></div>
+          <div><dt class="label">Joined via</dt><dd>${m.source==='admin'?'Added by admin':'Self sign-up'}</dd></div>
+          <div><dt class="label">Details</dt><dd>${complete(m)?'Complete':'Incomplete'}</dd></div>
+          <div><dt class="label">NDA</dt><dd>${m.signedAt?'Signed':'Not signed'}</dd></div>
+          <div><dt class="label">Materials</dt><dd>${m.handbookAt?'Opened '+esc(fmtDate(m.handbookAt)):'Not opened'}</dd></div>
+          <div><dt class="label">Logged in yet</dt><dd>${m.userId?'Yes':'Not yet'}</dd></div>
+        </dl>
+        <div class="sect"><h2>Recent activity</h2><span>${S.logs===null?'<button type="button" class="linkbtn" data-act="memberLogs">Load</button>':''}</span></div>
+        ${S.logs===null?'<div class="empty" style="padding:16px">Activity not loaded yet.</div>':mlogs.length?`<div class="actlist">${mlogs.map(l=>`<div class="actrow"><b>${l.action==='download'?'Downloaded':'Viewed'} ${esc(l.resource_title||'a file')}</b><span>${esc(fmtDT(l.created_at))}</span></div>`).join('')}</div>`:'<div class="empty" style="padding:16px">No files opened yet.</div>'}
+        <div class="sect"><h2>Access</h2></div>
+        ${m.approved?'':`<div class="dz"><div><b>Approve member</b><p>Confirms they're on the team. They can then sign the NDA and unlock their library.</p></div><button type="button" class="btn sm pri" data-act="approve">${ic('check')} Approve</button></div>`}
+        <div class="dz"><div><b>${m.revoked?'Restore access':'Revoke access'}</b><p>${m.revoked?'Reopens their library if they have signed.':'Closes their library immediately. Use this when someone leaves.'}</p></div>
+          ${m.revoked?'<button type="button" class="btn sm" data-act="restore">Restore</button>'
+            : MS.confirm==='revoke'?'<div style="display:flex;gap:6px"><button type="button" class="btn sm ghost" data-act="cancelConfirm">Cancel</button><button type="button" class="btn sm danger" data-act="revokeYes">Yes, revoke</button></div>'
+            : '<button type="button" class="btn sm danger" data-act="revoke">Revoke</button>'}</div>
+        <div class="dz"><div><b>Delete record</b><p>For mistakes and duplicates only. They could sign up again, so use Revoke to block someone.</p></div>
+          ${MS.confirm==='delete'?'<div style="display:flex;gap:6px"><button type="button" class="btn sm ghost" data-act="cancelConfirm">Cancel</button><button type="button" class="btn sm danger" data-act="deleteYes">Yes, delete</button></div>'
+            :'<button type="button" class="btn sm danger" data-act="delete">Delete</button>'}</div>
+      </div></div>`);
+  }
+  function addModal(created){
+    MS = {kind:'add'};
+    if(created){
+      modal(`<div class="modal sm" role="dialog" aria-modal="true" aria-labelledby="ad-h">
+        <div class="mh"><div><h2 id="ad-h">Member added</h2><p>${created.loginErr ? `They're approved, but their login couldn't be created (${esc(created.loginErr)}). Check the admin_create_login function, or create their login in the Supabase dashboard.` : created.login && created.login.created === false ? `They're approved. They already had a login, so their existing password still works.` : `They're approved and their login is ready. Send them these details. They'll be asked to choose their own password the first time they log in.`}</p></div><button type="button" class="iconbtn" data-close aria-label="Close">${ic('x')}</button></div>
+        <div class="mb"><div class="label">Email</div><div class="idbox"><b style="font-size:16px;font-family:var(--body)">${esc(created.email)}</b></div>
+          ${created.login && created.login.created ? `<div class="label" style="margin-top:18px">Starting password</div><div class="idbox"><b style="font-size:16px;font-family:var(--mono)" id="pwText">${esc(DEFAULT_TEMP_PASSWORD)}</b><button type="button" class="btn sm" data-act="copyPw">${ic('copy')} Copy</button></div>` : ''}
+          <div class="label" style="margin-top:18px">Portal link</div><div class="idbox"><b style="font-size:14px;font-family:var(--body);overflow-wrap:anywhere" id="linkText">${esc(portalLink())}</b><button type="button" class="btn sm" data-act="copyLink">${ic('copy')} Copy</button></div></div>
+        <div class="mf"><div class="r"><button type="button" class="btn ghost" data-act="add">Add another</button><button type="button" class="btn pri" data-close>Done</button></div></div></div>`);
+      return;
+    }
+    modal(`<div class="modal sm" role="dialog" aria-modal="true" aria-labelledby="ad-h">
+      <div class="mh"><div><h2 id="ad-h">Add a member</h2><p>They're approved straight away and get a login with the starting password. They fill in the rest after logging in.</p></div><button type="button" class="iconbtn" data-close aria-label="Close">${ic('x')}</button></div>
+      <form id="addForm" novalidate><div class="mb"><div class="form">
+        <div class="field full"><label for="n-name">Full name</label><input id="n-name"></div>
+        <div class="field full"><label for="n-email">Email they'll log in with</label><input id="n-email" type="email"></div>
+        <div class="field"><label for="n-vertical">Vertical</label><select id="n-vertical">${opts(Object.keys(VERTICALS),'Research')}</select></div>
+        <div class="field"><label for="n-division">Division</label><select id="n-division">${opts(VERTICALS.Research,'M&A')}</select></div>
+        <div class="field full"><label for="n-role">Role</label><select id="n-role">${opts(ROLES.Research,'Analyst')}</select></div>
+      </div><p class="err" id="addErr" style="margin:14px 0 0"></p></div>
+      <div class="mf"><div class="r"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn pri" id="addBtn">Add member</button></div></div></form></div>`);
+    setTimeout(()=>$('#n-name')?.focus(), 30);
+  }
+  function editFileModal(id){
+    const r = S.resources.find(x=>x.id===id); if(!r) return;
+    MS = {kind:'editfile', id};
+    modal(`<div class="modal sm" role="dialog" aria-modal="true" aria-labelledby="ef-h">
+      <div class="mh"><div><h2 id="ef-h">Edit file</h2><p>${esc(r.file_name||'')}</p></div><button type="button" class="iconbtn" data-close aria-label="Close">${ic('x')}</button></div>
+      <form id="editFileForm" novalidate><div class="mb"><div class="form" style="grid-template-columns:1fr">
+        <div class="field"><label for="e-title">Title</label><input id="e-title" value="${esc(r.title)}"></div>
+        <div class="field"><label for="e-desc">Short description</label><input id="e-desc" value="${esc(r.description||'')}"></div>
+        <div class="field"><label for="e-div">Who it's for</label><select id="e-div">${divOptions(r.division)}</select></div>
+        <label class="switch-row"><input type="checkbox" id="e-dl" ${r.allow_download?'checked':''}><div>Allow download<span>Members can save the original file. Every download is logged.</span></div></label>
+      </div><p class="err" id="efErr" style="margin:14px 0 0"></p></div>
+      <div class="mf"><div class="r"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn pri">Save changes</button></div></div></form></div>`);
+  }
+  function passwordModal(){
+    MS = {kind:'password'};
+    modal(`<div class="modal sm" role="dialog" aria-modal="true" aria-labelledby="pw-h">
+      <div class="mh"><div><h2 id="pw-h">Change password</h2><p>${esc(myEmail())}</p></div><button type="button" class="iconbtn" data-close aria-label="Close">${ic('x')}</button></div>
+      <form id="pwForm" novalidate><div class="mb"><div class="form" style="grid-template-columns:1fr">
+        <div class="field"><label for="w-pw">New password</label><input id="w-pw" type="password" autocomplete="new-password"><span class="hint">At least 8 characters.</span></div>
+        <div class="field"><label for="w-pw2">Confirm new password</label><input id="w-pw2" type="password" autocomplete="new-password"></div>
+      </div><p class="err" id="pwErr" style="margin:14px 0 0"></p></div>
+      <div class="mf"><div class="r"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn pri">Save password</button></div></div></form></div>`);
+    setTimeout(()=>$('#w-pw')?.focus(), 30);
+  }
+
+  /* ================= LOCKED VIEWER ================= */
+  let viewerState = null;
+  function viewerKeys(e){
+    if(!$('#viewerBox')) return;
+    const k = (e.key||'').toLowerCase();
+    if((e.metaKey || e.ctrlKey) && (k==='s' || k==='p')){ e.preventDefault(); e.stopPropagation(); toast('Saving and printing are turned off for Acme materials.'); return; }
+    if(viewerState && viewerState.pdf){
+      if(k==='arrowright' || k==='pagedown'){ e.preventDefault(); goPage(1); }
+      if(k==='arrowleft' || k==='pageup'){ e.preventDefault(); goPage(-1); }
+    }
+  }
+  const wmText = () => S.mode==='admin' ? 'Admin preview · Acme confidential' : `${S.me?S.me.name:''} · ${S.me?S.me.code:''} · Acme confidential`;
+  function stampCanvas(ctx, w, h, dark){
+    const t = wmText();
+    ctx.save();
+    ctx.globalAlpha = dark ? 0.18 : 0.13; ctx.fillStyle = dark ? '#dfdcc9' : '#0c0e1e';
+    const fs = Math.max(11, Math.round(w/48)); ctx.font = `600 ${fs}px "IBM Plex Sans", Arial, sans-serif`;
+    ctx.translate(w/2, h/2); ctx.rotate(-Math.PI/6);
+    const tw = ctx.measureText(t).width + fs*4, step = fs*7;
+    for(let y=-h; y<h; y+=step){ for(let x=-w*1.2; x<w*1.2; x+=tw){ ctx.fillText(t, x + ((y/step)%2?tw/2:0), y); } }
+    ctx.restore();
+  }
+  async function openViewer(r, opts={}){
+    MS = {kind:'viewer', rid:r.id};
+    const k = opts.kind || fileKind(r);
+    const title = opts.title || r.title;
+    const canDl = !!opts.allowDownload;
+    modal(`<div class="modal lg" role="dialog" aria-modal="true" aria-labelledby="vw-h">
+      <div class="mh"><div><h2 id="vw-h">${esc(title)}</h2><p>${canDl?'Downloadable':'View only'} · watermarked${k==='PDF'?' · use ← → to turn pages':''}</p></div><button type="button" class="iconbtn" data-close aria-label="Close">${ic('x')}</button></div>
+      <div class="mb" style="background:var(--bg);padding:14px"><div class="viewer" id="viewerBox" oncontextmenu="return false"><span class="label" style="margin:auto;padding:40px">Opening…</span></div></div>
+      <div class="mf"><div class="vbar" id="vbar"></div><div class="r">${canDl?`<button type="button" class="btn sm" data-dlnow="1">${ic('download')} Download</button>`:''}</div></div></div>`);
+    document.addEventListener('keydown', viewerKeys, true);
+    const st = viewerState = {closed:false, r, opts, kind:k};
+    const expires = k==='VIDEO' ? 4*3600 : 120;
+    const { data, error } = await sb.storage.from(opts.bucket || BUCKET).createSignedUrl(opts.path || r.file_path, expires);
+    if(st.closed) return;
+    const box = $('#viewerBox');
+    if(error || !data || !data.signedUrl){ box.innerHTML = `<div class="empty" style="border:0;margin:auto">${esc(friendly(error||'Could not open the file.'))}</div>`; return; }
+    const url = data.signedUrl;
+    try{
+      if(k==='PDF'){
+        await loadScript(LIB.pdfjs);
+        const pdfjs = window.pdfjsLib; pdfjs.GlobalWorkerOptions.workerSrc = LIB.pdfjsWorker;
+        const pdf = await pdfjs.getDocument({url, disableAutoFetch:false}).promise;
+        if(st.closed) return;
+        st.pdf = pdf; st.page = 1; st.zoom = 1;
+        $('#vbar').innerHTML = `<button type="button" class="btn sm" data-vpage="-1">Previous</button><span class="num" id="vnum"></span><button type="button" class="btn sm" data-vpage="1">Next</button><button type="button" class="btn sm ghost" data-vzoom="-1" aria-label="Zoom out">−</button><button type="button" class="btn sm ghost" data-vzoom="1" aria-label="Zoom in">+</button>`;
+        await renderPdfPage();
+      } else if(k==='VIDEO'){
+        box.innerHTML = `<video src="${esc(url)}" controls controlslist="nodownload noplaybackrate" disablepictureinpicture playsinline oncontextmenu="return false"></video><div class="wmgrid" aria-hidden="true">${Array.from({length:18}).map(()=>`<span>${esc(wmText())}</span>`).join('')}</div>`;
+      } else if(k==='IMG'){
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        img.onload = () => { if(st.closed) return; const c = document.createElement('canvas'); const maxW = Math.min(box.clientWidth-20, img.naturalWidth); const s = maxW / img.naturalWidth; c.width = img.naturalWidth; c.height = img.naturalHeight; c.style.width = Math.round(img.naturalWidth*s)+'px'; const x = c.getContext('2d'); x.drawImage(img,0,0); stampCanvas(x, c.width, c.height, false); box.innerHTML = ''; box.appendChild(c); };
+        img.onerror = () => { box.innerHTML = '<div class="empty" style="border:0;margin:auto">Could not open the image.</div>'; };
+        img.src = url;
+      } else {
+        box.innerHTML = `<div style="margin:auto;text-align:center;padding:40px;display:flex;flex-direction:column;gap:14px;align-items:center"><p style="margin:0;color:var(--muted);max-width:44ch">${canDl?'This file type can\'t be previewed in the portal. Download it to open it in PowerPoint, Word or Excel.':'This file type can\'t be shown in the locked viewer. Ask the team for a PDF version.'}</p></div>`;
+      }
+    }catch(e){ console.error(e); if(!st.closed) box.innerHTML = `<div class="empty" style="border:0;margin:auto">${esc(friendly(e))}</div>`; }
+  }
+  async function renderPdfPage(){
+    const st = viewerState; if(!st || !st.pdf || st.closed) return;
+    const box = $('#viewerBox'); if(!box) return;
+    const page = await st.pdf.getPage(st.page);
+    if(st.closed) return;
+    const base = page.getViewport({scale:1});
+    const fitW = Math.max(280, box.clientWidth - 24);
+    const cssScale = (fitW / base.width) * st.zoom;
+    const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    const vp = page.getViewport({scale: cssScale * dpr});
+    const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+    c.style.width = Math.floor(vp.width/dpr)+'px'; c.style.height = Math.floor(vp.height/dpr)+'px';
+    const ctx = c.getContext('2d');
+    await page.render({canvasContext:ctx, viewport:vp}).promise;
+    if(st.closed) return;
+    stampCanvas(ctx, c.width, c.height, false);
+    box.innerHTML = ''; box.appendChild(c); box.scrollTop = 0;
+    const n = $('#vnum'); if(n) n.textContent = `Page ${st.page} of ${st.pdf.numPages}`;
+    document.querySelectorAll('[data-vpage="-1"]').forEach(b=>b.disabled = st.page<=1);
+    document.querySelectorAll('[data-vpage="1"]').forEach(b=>b.disabled = st.page>=st.pdf.numPages);
+  }
+  function goPage(d){ const st = viewerState; if(!st || !st.pdf) return; const p = Math.max(1, Math.min(st.pdf.numPages, st.page + d)); if(p !== st.page){ st.page = p; renderPdfPage(); } }
+  async function downloadResource(r){
+    const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(r.file_path, 60, { download: r.file_name || true });
+    if(error || !data){ toast(friendly(error||'Could not start the download.'), true); return; }
+    logAccess(r, 'download');
+    const a = document.createElement('a'); a.href = data.signedUrl; a.rel = 'noopener'; a.download = r.file_name || ''; document.body.appendChild(a); a.click(); a.remove();
+    toast('Download started');
+  }
+
+  /* ================= RENDER ================= */
+  function render(){
+    const app = $('#app');
+    const ae = document.activeElement, focusId = ae && ae.id, selStart = ae && ae.selectionStart;
+    const keep = {}; const onAuthScreen = !!$('.auth-card'); if(onAuthScreen || (ae && ae.id && /^(p-|c-|u-|typed|aq)/.test(ae.id))) { document.querySelectorAll('#app input,#app select,#app textarea').forEach(el=>{ if(!el.id || el.type==='file') return; keep[el.id] = el.type==='checkbox' ? el.checked : el.value; }); }
+    if(!S.booted || S.loading){ app.innerHTML = '<div class="boot">Loading portal…</div>'; return; }
+    if(!S.session){ app.innerHTML = authView(); requestAnimationFrame(drawGrain); }
+    else if(S.recovering || mustChangePw()){ app.innerHTML = newPassView(); requestAnimationFrame(drawGrain); }
+    else if(S.mode==='admin' && S.isAdmin){ app.innerHTML = shell(S.adminTab==='library' ? adminLibrary() : S.adminTab==='activity' ? adminActivity() : adminMembers()); }
+    else if(!S.me){ app.innerHTML = createView(); requestAnimationFrame(drawGrain); }
+    else {
+      const v = {overview, profile, library, nda}[S.tab] || overview;
+      app.innerHTML = shell(v(S.me));
+      if(S.tab==='nda' && !S.me.signedAt) setupPad();
+      if(S.tab==='nda') setupNda();
+    }
+    Object.keys(keep).forEach(id => { const el = document.getElementById(id); if(!el) return; if(el.type==='checkbox') el.checked = keep[id]; else if(!el.disabled) el.value = keep[id]; });
+    if(focusId){ const el = document.getElementById(focusId); if(el && el !== document.activeElement){ el.focus(); try{ if(selStart!=null) el.setSelectionRange(selStart, selStart); }catch(e){} } }
+    if(MS && MS.kind==='member') memberModal(MS.id);
+  }
+  function setNav(k, edit){
+    if(S.mode==='admin'){ S.adminTab = k; if(k==='activity') S.logs = null; } else { if(S.tab !== k) ndaScrollTop = 0; S.tab = k; S.editing = !!edit; }
+    closeModal(); render(); window.scrollTo({top:0, behavior:'smooth'});
+    if(edit) setTimeout(()=>{ const f=document.querySelector('#pForm input:not([disabled])'); if(f) f.focus(); }, 40);
+  }
+  document.addEventListener('change', e => {
+    const id = e.target.id || '';
+    const m = id.match(/^(c|n|a)-vertical$/);
+    if(m){ const p = m[1], v = e.target.value; $('#'+p+'-division').innerHTML = opts(VERTICALS[v], VERTICALS[v][0]); $('#'+p+'-role').innerHTML = opts(ROLES[v], ROLES[v][0]); }
+    if(/^a-(vertical|division|role)$/.test(id) && MS && MS.kind==='member') MS.dirty = true;
+    if(id === 'u-file'){
+      const f = e.target.files && e.target.files[0], t = $('#u-title');
+      if(f && t && !t.value.trim()) t.value = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g,' ').trim();
+      if(f) $('#u-dl').checked = isPpt(f.name);
+    }
+    if(id === 'atype'){ S.actType = e.target.value; render(); }
+  });
+  async function copyText(text, fallbackId){
+    try{ await navigator.clipboard.writeText(text); toast('Copied'); }
+    catch(err){ const el = fallbackId && $('#'+fallbackId); if(el){ const s=window.getSelection(), rg=document.createRange(); rg.selectNodeContents(el); s.removeAllRanges(); s.addRange(rg); toast('Selected. Press Cmd+C or Ctrl+C to copy.'); } else toast(text); }
+  }
+  const upd = (id, patch, ok) => run(async () => { const r = await sb.from('members').update(patch).eq('id', id).select(); if(!r.error && (!r.data || !r.data.length)) return {error:{message:'permission'}}; return r; }, ok);
+
+  /* ================= EVENTS ================= */
+  document.addEventListener('click', async e => {
+    if(e.target.id === 'scrim'){ closeModal(); return; }
+    const ab = e.target.closest('button[data-approve]');
+    if(ab){ ab.disabled = true; await upd(ab.dataset.approve, {approved:true, approved_at:nowISO()}, 'Member approved'); await loadAll(); return; }
+    const row = e.target.closest('tr[data-view]');
+    if(row){ MS = null; memberModal(row.dataset.view); return; }
+    const t = e.target.closest('button'); if(!t) return;
+    const d = t.dataset, m = S.me;
+
+    if(d.auth){ const em = (document.querySelector('.auth-card input[type=email]')||{}).value; if(em) S.authEmail = em.trim(); S.auth = d.auth; render(); setTimeout(()=>{ const f = document.querySelector('.auth-card input'); if(f) f.focus(); }, 30); return; }
+    if(d.mode){ S.mode = d.mode; if(d.mode==='admin') S.adminTab='members'; closeModal(); render(); window.scrollTo({top:0}); return; }
+    if(d.nav){ setNav(d.nav, d.edit); return; }
+    if(d.filter){ S.filter = d.filter; render(); return; }
+    if(d.status){ S.statusF = d.status; render(); return; }
+    if('close' in d){ closeModal(); return; }
+    if(d.vpage){ goPage(+d.vpage); return; }
+    if(d.vzoom){ const st = viewerState; if(st && st.pdf){ st.zoom = Math.max(0.6, Math.min(2.5, st.zoom + (+d.vzoom)*0.25)); renderPdfPage(); } return; }
+    if(d.dlnow){ const st = viewerState; if(st){ if(st.opts.bucket){ const r = await sb.storage.from(st.opts.bucket).createSignedUrl(st.opts.path, 60, {download: st.opts.fileName || true}); if(r.data){ const a=document.createElement('a'); a.href=r.data.signedUrl; a.download=st.opts.fileName||''; document.body.appendChild(a); a.click(); a.remove(); } else toast(friendly(r.error), true); } else downloadResource(st.r); } return; }
+    if(d.open){
+      const r = S.resources.find(x=>x.id===d.open); if(!r) return;
+      openViewer(r, {allowDownload: !!r.allow_download});
+      logAccess(r, 'view');
+      if(S.mode!=='admin' && m && !m.handbookAt && forMember(r, m)){ upd(m.id, {handbook_at:nowISO()}).then(()=>loadAll(true)); }
+      return;
+    }
+    if(d.dl){
+      const r = S.resources.find(x=>x.id===d.dl); if(!r) return;
+      await downloadResource(r);
+      if(S.mode!=='admin' && m && !m.handbookAt && forMember(r, m)){ upd(m.id, {handbook_at:nowISO()}).then(()=>loadAll(true)); }
+      return;
+    }
+    if(d.signedpdf){
+      const mm = S.members.find(x=>x.id===d.signedpdf); if(!mm || !mm.ndaPath) return;
+      openViewer({id:'nda-'+mm.id, title:`Acme NDA · ${mm.signedName||mm.name}`}, {kind:'PDF', bucket:NDA_BUCKET, path:mm.ndaPath, allowDownload:true, fileName:`Acme-NDA-${mm.code}.pdf`});
+      return;
+    }
+    if(d.editfile){ editFileModal(d.editfile); return; }
+    if(d.delfile){ S.confirmFile = d.delfile; render(); return; }
+    if(d.delfileYes){
+      const r = S.resources.find(x=>x.id===d.delfileYes); S.confirmFile = null; if(!r){ render(); return; }
+      t.disabled = true;
+      await run(async () => { const a = await sb.from('resources').delete().eq('id', r.id); if(a.error) return a; await sb.storage.from(BUCKET).remove([r.file_path]); return a; }, 'File deleted');
+      await loadAll(); return;
+    }
+    if(t.id === 'editBtn'){ S.editing = true; render(); setTimeout(()=>$('#p-name')?.focus(), 30); return; }
+    if(t.id === 'cancelEdit'){ S.editing = false; render(); return; }
+    if(t.id === 'resend'){ if(S.cooldown>0) return; const r = await sb.auth.resend({type:'signup', email:S.authEmail, options:{emailRedirectTo:portalLink()}}); if(r.error) authErr(friendly(r.error)); else { toast('New code sent'); startCooldown(); } return; }
+    if(t.id === 'resendReset'){ if(S.cooldown>0) return; const r = await sb.auth.resetPasswordForEmail(S.authEmail, {redirectTo:portalLink()}); if(r.error) authErr(friendly(r.error)); else { toast('New code sent'); startCooldown(); } return; }
+
+    switch(d.act){
+      case 'demoLogin': { const f = $('#loginForm'); if(!f) return; $('#l-email').value = d.who === 'admin' ? 'admin@demo.example' : 'member@demo.example'; $('#l-pw').value = 'demo'; f.requestSubmit(); return; }
+      case 'demoReset': if(sb.reset) sb.reset(); return;
+      case 'signout': unsubscribe(); S.session = null; await sb.auth.signOut(); S.recovering=false; S.auth='login'; S.pendingPw=''; S.tab='overview'; S.adminTab='members'; S.mode='member'; S.q=''; S.statusF='all'; S.filter='mine'; S.editing=false; S.logs=null; closeModal(); afterAuth(); toast('Signed out'); return;
+      case 'confirmedLogin': { setSending(true); const r = await sb.auth.signInWithPassword({email:S.authEmail, password:S.pendingPw}); setSending(false); if(r.error) authErr(/not confirmed/i.test(r.error.message||'') ? 'Your email isn\'t confirmed yet. Enter the code, or click the link in the email first.' : friendly(r.error)); else { S.pendingPw=''; } return; }
+      case 'password': passwordModal(); return;
+      case 'copyLink': copyText(portalLink(), 'linkText'); return;
+      case 'copyPw': copyText(DEFAULT_TEMP_PASSWORD, 'pwText'); return;
+      case 'csv': downloadCsv(); return;
+      case 'reloadLogs': S.logs = null; render(); return;
+      case 'memberLogs': { const id = MS.id; await loadLogs(); memberModal(id); return; }
+      case 'add': addModal(); return;
+      case 'cancelFile': S.confirmFile = null; render(); return;
+      case 'saveRole': { const id = MS.id; const ok = await upd(id, {vertical:$('#a-vertical').value, division:$('#a-division').value, role:$('#a-role').value}, 'Role saved'); if(ok && MS) MS.dirty = false; await loadAll(); return; }
+      case 'approve': { const id = MS.id; await upd(id, {approved:true, approved_at:nowISO()}, 'Member approved'); await loadAll(); return; }
+      case 'revoke': MS.confirm='revoke'; memberModal(MS.id); return;
+      case 'delete': MS.confirm='delete'; memberModal(MS.id); return;
+      case 'cancelConfirm': MS.confirm=null; memberModal(MS.id); return;
+      case 'revokeYes': { const id = MS.id; MS.confirm=null; await upd(id, {revoked:true, revoked_at:nowISO()}, 'Access revoked. Their library is now closed.'); await loadAll(); return; }
+      case 'restore': { const id = MS.id; await upd(id, {revoked:false, revoked_at:null}, 'Access restored'); await loadAll(); return; }
+      case 'deleteYes': { const id = MS.id; MS = null; closeModal(); await run(()=>sb.from('members').delete().eq('id', id), 'Record deleted'); await loadAll(); return; }
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && $('#scrim')) closeModal();
+    if(e.key === 'Enter' && e.target.matches && e.target.matches('tr[data-view]')){ MS=null; memberModal(e.target.dataset.view); }
+  });
+  document.addEventListener('input', e => {
+    if(e.target.id === 'q'){ S.q = e.target.value; render(); }
+    if(e.target.id === 'aq'){ S.actQ = e.target.value; render(); }
+  });
+  window.addEventListener('resize', () => { if($('#grain')) drawGrain(); });
+  document.addEventListener('contextmenu', e => { if(e.target.closest && e.target.closest('#viewerBox')) e.preventDefault(); });
+
+  document.addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target.id, val = id => ($('#'+id)?.value || '').trim();
+    const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const pwCheck = (a, b) => a.length < 8 ? 'Choose a password with at least 8 characters.' : a !== b ? 'The two passwords don\'t match.' : '';
+
+    if(f === 'loginForm'){
+      const email = val('l-email').toLowerCase(), pw = $('#l-pw').value;
+      S.authEmail = email;
+      if (!emailOk(email)) return authErr('Enter a valid email.');
+      if (!pw) return authErr('Enter your password.');
+      setSending(true);
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+      setSending(false);
+      if(error){
+        return authErr(friendly(error));
+      }
+      if (isStartingPw(pw) || (data && data.user && data.user.user_metadata && data.user.user_metadata.must_change_password)) {
+        pwJustChanged = false;
+        S.recovering = true; // Shows the "Choose your own password" screen (newPassView)
+        render();
+        toast("Welcome to Acme! Choose your own password to continue.");
+        return;
+      }
+    }
+    if(f === 'forgotForm'){
+      const email = val('f-email').toLowerCase(); S.authEmail = email;
+      if(!emailOk(email)) return authErr('Enter a valid email.');
+      setSending(true);
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: portalLink() });
+      setSending(false);
+      if(error) return authErr(friendly(error));
+      S.auth = 'reset'; startCooldown(); render(); setTimeout(()=>$('#r-code')?.focus(), 30);
+    }
+    if(f === 'resetForm'){
+      const code = val('r-code').replace(/\D/g,''), pw = $('#r-pw').value, pw2 = $('#r-pw2').value;
+      if(code.length < 6) return authErr('Enter the code from the email.');
+      const pe = pwCheck(pw, pw2); if(pe) return authErr(pe);
+      setSending(true);
+      const v = await sb.auth.verifyOtp({ email:S.authEmail, token:code, type:'recovery' });
+      if(v.error){ setSending(false); return authErr(friendly(v.error)); }
+      const u = await sb.auth.updateUser({ password: pw, data: { must_change_password: false } });
+      setSending(false);
+      if(u.error) return authErr(friendly(u.error));
+      pwJustChanged = true; toast('Password saved. You\'re logged in.');
+    }
+    if(f === 'newPassForm'){
+      const pw = $('#n-pw').value, pw2 = $('#n-pw2').value;
+      const pe = pwCheck(pw, pw2); if(pe) return authErr(pe);
+      if(isStartingPw(pw)) return authErr('Choose a password that is different from your starting password.');
+      const u = await sb.auth.updateUser({ password: pw, data: { must_change_password: false } });
+      if(u.error) return authErr(friendly(u.error));
+      pwJustChanged = true; S.recovering = false; toast('Password saved'); afterAuth();
+    }
+    if(f === 'pwForm'){
+      const pw = $('#w-pw').value, pw2 = $('#w-pw2').value;
+      const pe = pwCheck(pw, pw2); if(pe){ $('#pwErr').textContent = pe; return; }
+      const u = await sb.auth.updateUser({ password: pw, data: { must_change_password: false } });
+      if(u.error){ $('#pwErr').textContent = friendly(u.error); return; }
+      pwJustChanged = true;
+      closeModal(); toast('Password changed');
+    }
+    if(f === 'createForm'){
+      const name = val('c-name');
+      if(!name){ $('#createErr').textContent = 'Enter your full name.'; return; }
+      const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+      const r = await sb.from('members').insert({ name, email:myEmail(), vertical:$('#c-vertical').value, division:$('#c-division').value, role:$('#c-role').value, first_participation: todayISO() }).select();
+      btn.disabled = false;
+      if(r.error){
+        if(/duplicate|unique/i.test(r.error.message||'')){ try{ await sb.rpc('claim_member'); }catch(x){} await loadAll(); if(S.me){ toast('Found your existing record. Welcome back.'); return; } }
+        $('#createErr').textContent = friendly(r.error); return;
+      }
+      S.tab='profile'; S.editing = true; await loadAll(); toast('Profile created. The team will approve you shortly.'); setTimeout(()=>$('#p-phone')?.focus(), 60);
+    }
+    if(f === 'pForm'){
+      const m = S.me, err = $('#pErr');
+      const patch = {name:val('p-name'), preferred:val('p-preferred'), phone:val('p-phone'), university:val('p-university'), chapter:$('#p-chapter').value, country:val('p-country'), timezone:val('p-timezone'), first_participation:val('p-first'), adult:$('#p-adult').value, linkedin:val('p-linkedin')};
+      if(!patch.name){ err.textContent = 'Full name can\'t be empty.'; return; }
+      if(patch.phone && !/^\+\d[\d\s-]{6,}$/.test(patch.phone)){ err.textContent = 'Start your phone number with + and the country code, like +60 12-345 6789.'; return; }
+      if(patch.first_participation && patch.first_participation > todayISO()){ err.textContent = 'Date of first participation can\'t be in the future.'; return; }
+      const ok = await upd(m.id, patch);
+      if(ok){
+        S.editing = false; await loadAll();
+        const after = Object.assign({}, m, patch, {firstParticipation:patch.first_participation});
+        const left = missing(after).length;
+        toast(left ? `Saved. ${left} required field${left===1?'':'s'} still missing.` : (patch.adult==='no' ? 'Saved. Members under 18 need a guardian form, so contact the team.' : m.approved ? 'Details saved. Next, sign the Acme NDA.' : 'Details saved. You can sign once the team approves you.'));
+      }
+    }
+    if(f === 'sForm'){
+      const m = S.me, err = $('#sErr');
+      if(!$('#c1').checked || !$('#c2').checked){ err.textContent = 'Tick both boxes to confirm.'; return; }
+      if(norm(val('typed')) !== norm(m.name)){ err.textContent = `Type your full name exactly as on your profile: ${m.name}.`; return; }
+      if(strokes < 1){ err.textContent = 'Draw your signature in the box.'; return; }
+      S.signing = true; const btn = $('#signBtn'); btn.disabled = true; btn.textContent = 'Signing…'; err.textContent = '';
+      try{
+        const signedAt = nowISO(), typedName = String(m.name).trim().replace(/\s+/g,' ');
+        const portalSig = exportSig(), inkSig = exportSigInk();
+        const bytes = await makeSignedPdf(m, inkSig, signedAt, typedName);
+        const path = `${S.session.user.id}/acme-nda-${NDA_VERSION}-${Date.now()}.pdf`;
+        const up = await sb.storage.from(NDA_BUCKET).upload(path, new Blob([bytes], {type:'application/pdf'}), { contentType:'application/pdf', upsert:false });
+        if(up.error) throw up.error;
+        const r = await sb.from('members').update({ signed_at:signedAt, signed_name:typedName, signature:portalSig, nda_version:NDA_VERSION, nda_path:path }).eq('id', m.id).select();
+        if(r.error) throw r.error;
+        S.signing = false; await loadAll(); window.scrollTo({top:0, behavior:'smooth'}); toast('Signed. Your library is unlocked, and your signed copy is saved.');
+      }catch(x){ console.error(x); S.signing = false; const b = $('#signBtn'); if(b){ b.disabled = false; b.textContent = 'Sign NDA and unlock library'; } const er = $('#sErr'); if(er) er.textContent = friendly(x); }
+    }
+    if(f === 'addForm'){
+      const name = val('n-name'), email = val('n-email').toLowerCase(), err = $('#addErr');
+      if(!name){ err.textContent = 'Enter their full name.'; return; }
+      if(!emailOk(email)){ err.textContent = 'Enter a valid email.'; return; }
+      if(S.members.some(x=>String(x.email).toLowerCase()===email)){ err.textContent = 'A member with this email already exists.'; return; }
+      $('#addBtn').disabled = true;
+      const ok = await run(() => sb.from('members').insert({ name, email, vertical:$('#n-vertical').value, division:$('#n-division').value, role:$('#n-role').value, approved:true, approved_at:nowISO(), source:'admin' }).select());
+      if(ok){
+        // Create their login with the starting password (admin-only database function)
+        let login = null, loginErr = '';
+        try{ const lg = await sb.rpc('admin_create_login', { p_email: email, p_name: name }); if(lg.error) throw lg.error; login = lg.data || {}; }
+        catch(x){ console.error(x); loginErr = friendly(x); }
+        await loadAll(); addModal({email, login, loginErr});
+      } else { const b=$('#addBtn'); if(b) b.disabled=false; }
+    }
+    if(f === 'editFileForm'){
+      const id = MS.id, title = val('e-title');
+      if(!title){ $('#efErr').textContent = 'Give the file a title.'; return; }
+      const r = await sb.from('resources').update({ title, description:val('e-desc'), division:$('#e-div').value, allow_download:$('#e-dl').checked }).eq('id', id).select();
+      if(r.error || !r.data || !r.data.length){ $('#efErr').textContent = friendly(r.error || 'permission'); return; }
+      closeModal(); toast('File updated'); await loadAll();
+    }
+    if(f === 'upForm'){
+      const file = $('#u-file').files[0], title = val('u-title'), err = $('#upErr');
+      if(!file){ err.textContent = 'Choose a file to upload.'; return; }
+      if(!title){ err.textContent = 'Give the file a title.'; return; }
+      if(file.size > MAX_UPLOAD_MB*1024*1024){ err.textContent = `That file is ${fmtSize(file.size)}. The limit is ${MAX_UPLOAD_MB} MB. For long videos, compress them or split them into parts.`; return; }
+      const division = $('#u-div').value, desc = val('u-desc'), allow = $('#u-dl').checked;
+      const safe = file.name.replace(/[^A-Za-z0-9._-]+/g,'-').replace(/-+/g,'-');
+      const folder = division.replace(/[^A-Za-z0-9]+/g,'-').toLowerCase();
+      const path = `${folder}/${Date.now()}-${safe}`;
+      S.uploading = true; render();
+      await run(async () => {
+        const up = await sb.storage.from(BUCKET).upload(path, file, { contentType:file.type || 'application/octet-stream', upsert:false });
+        if(up.error) return up;
+        const ins = await sb.from('resources').insert({ title, description:desc, division, file_path:path, file_name:file.name, file_type:file.type||'', file_size:file.size, allow_download:allow }).select();
+        if(ins.error){ await sb.storage.from(BUCKET).remove([path]); }
+        return ins;
+      }, allow ? 'Uploaded. Active members can view and download it.' : 'Uploaded. Active members can view it.');
+      S.uploading = false; await loadAll();
+    }
+  });
+
+  /* ================= BOOT ================= */
+  (async function boot(){
+    let hashErr = null;
+    if(location.hash && /error_description/.test(location.hash)){ const h = new URLSearchParams(location.hash.slice(1)); hashErr = h.get('error_description'); }
+    const isRecovery = /type=recovery/.test(location.hash || '');
+    try{ const { data } = await sb.auth.getSession(); S.session = data ? data.session : null; }catch(e){ S.session = null; }
+    if(isRecovery && S.session) S.recovering = true;
+    if(location.hash && /access_token|error/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
+    S.booted = true;
+    if(hashErr) setTimeout(()=>toast(/expired|invalid/i.test(hashErr) ? 'That email link has expired or was already used. If you were confirming your email, try logging in. Otherwise, request a new code.' : hashErr, true), 300);
+    await afterAuth();
+    sb.auth.onAuthStateChange((event, session) => {
+      if(event === 'PASSWORD_RECOVERY'){ S.session = session; S.recovering = true; render(); return; }
+      const was = S.session && S.session.user && S.session.user.id, now = session && session.user && session.user.id;
+      S.session = session;
+      if(was !== now) setTimeout(afterAuth, 0);
+    });
+  })();
+})();
+</script>
+
+</body>
+</html>
